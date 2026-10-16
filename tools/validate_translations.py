@@ -35,7 +35,11 @@ def validate(ja, translated):
             expected = Counter(fix["corrected_tags"])
         if tags(ko) != expected:
             problems.append(f"Markup mismatch: {key}")
-        if re.search(r"[\u3041-\u3096\u30a1-\u30fa\u30fc-\u30ff]", ko):
+        # Credit the original artist under their unchanged professional name.
+        kana_check = ko
+        if key == "ThankStart" and ko.count("西向く侍") == ja[key].count("西向く侍"):
+            kana_check = ko.replace("西向く侍", "")
+        if re.search(r"[\u3041-\u3096\u30a1-\u30fa\u30fc-\u30ff]", kana_check):
             problems.append(f"Japanese remains: {key}")
     return problems
 

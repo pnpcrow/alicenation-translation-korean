@@ -11,6 +11,7 @@ from extract_localization import parse_table, build_table
 from korean_font import install_font
 from addressables import update_catalog
 from validate_translations import validate
+from dialogue import load_dialogue
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -22,6 +23,10 @@ def load_translations():
         if overlap:
             raise ValueError(f"Duplicate translation keys: {overlap}")
         merged.update(rows)
+    dialogue = load_dialogue()
+    if merged.keys() & dialogue.keys():
+        raise ValueError("Duplicate explicit dialogue keys")
+    merged.update(dialogue)
     alias_path = ROOT / "translations/aliases.json"
     if alias_path.exists():
         aliases = json.loads(alias_path.read_text("utf-8"))
