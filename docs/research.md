@@ -30,7 +30,7 @@ RVA `0x51D879`의 `jne`를 통과시키는 최소 수정과 전체 한국어 CN 
 
 - [UnityPy](https://github.com/K0lb3/UnityPy), 로컬 설치 1.25.3
 - [Il2CppDumper](https://github.com/Perfare/Il2CppDumper/releases/tag/v6.7.46), 읽기 전용 구조 분석
-- [Gowun Dodum](https://github.com/google/fonts/tree/main/ofl/gowundodum), SIL OFL (라이선스 파일 동봉)
+- [학교안심 그림일기](https://copyright.keris.or.kr/wft/fntDwnldView?fntGrpId=GFT202408200000000000001), 사용자 제공 TTF 원본, KERIS / 헤움디자인, SIL OFL 1.1 (라이선스 동봉). 현대 한글 11,172자 지원을 cmap으로 확인했다.
 
 ## 미완료
 

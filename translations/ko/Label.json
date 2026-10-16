@@ -16,7 +16,7 @@
   "Label_Cancel": "취소",
   "Label_Close": "닫기",
   "Label_CardInfo1": "제작법 목록",
-  "Label_CardInfo2": "{0} + 합성 → {1}",
+  "Label_CardInfo2": "{0} + 현재 카드 → {1}",
   "Label_CardInfo3": ", ",
   "Label_CardInfo4": "【{0}】",
   "Label_CardInfo5": "종료 시:",

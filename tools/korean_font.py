@@ -21,7 +21,16 @@ def clone_object(obj, path_id):
     obj.assets_file.objects[path_id] = clone
     return clone
 
-def install_font(objects, tmp_template, tmp_objects, source_font_id, font_file=Path("assets/fonts/GowunDodum-Regular.ttf")):
+DEFAULT_FONT = Path(__file__).resolve().parents[1] / "assets/fonts/HakgyoansimGeurimilgi-Regular.ttf"
+
+
+def install_font(objects, tmp_template, tmp_objects, source_font_id, font_file=DEFAULT_FONT):
+    ft = TTFont(font_file)
+    family = ft["name"].getDebugName(1)
+    style = ft["name"].getDebugName(2)
+    missing = set(range(0xAC00, 0xD7A4)) - ft.getBestCmap().keys()
+    if missing:
+        raise ValueError(f"Korean font is missing {len(missing)} Hangul syllables")
     nodes = tmp_template.serialized_type.node
     template = tmp_objects[-1]
     tdata = template.read_typetree(nodes=nodes)
@@ -29,9 +38,9 @@ def install_font(objects, tmp_template, tmp_objects, source_font_id, font_file=P
     material_src = objects[tdata["m_Material"]["m_PathID"]]
     font_obj = clone_object(objects[source_font_id], FONT_ID)
     font_data = font_obj.read_typetree()
-    font_data["m_Name"] = "GowunDodum-Korean"
+    font_data["m_Name"] = family
     font_data["m_FontData"] = list(font_file.read_bytes())
-    font_data["m_FontNames"] = ["Gowun Dodum"]
+    font_data["m_FontNames"] = [family]
     font_data["m_FallbackFonts"] = []
     font_obj.save_typetree(font_data)
 
@@ -56,7 +65,7 @@ def install_font(objects, tmp_template, tmp_objects, source_font_id, font_file=P
     material.save_typetree(mdata)
 
     tmp = clone_object(template, TMP_ID)
-    tdata["m_Name"] = "GowunDodum Korean SDF"
+    tdata["m_Name"] = family + " SDF"
     tdata["m_SourceFontFile"] = pptr(FONT_ID)
     tdata["m_SourceFontFileGUID"] = ""
     tdata["m_Material"] = pptr(MATERIAL_ID)
@@ -70,11 +79,10 @@ def install_font(objects, tmp_template, tmp_objects, source_font_id, font_file=P
     tdata["m_FreeGlyphRects"] = [{"m_X": 0, "m_Y": 0, "m_Width": 1023, "m_Height": 1023}]
     tdata["m_FallbackFontAssetTable"] = []
     tdata["m_FontFeatureTable"] = {k: [] for k in tdata["m_FontFeatureTable"]}
-    ft = TTFont(font_file)
     units = ft["head"].unitsPerEm
     scale = 90 / units
     face = tdata["m_FaceInfo"]
-    face.update(m_FamilyName="Gowun Dodum", m_StyleName="Regular", m_UnitsPerEM=units,
+    face.update(m_FamilyName=family, m_StyleName=style, m_UnitsPerEM=units,
                 m_LineHeight=(ft["hhea"].ascent - ft["hhea"].descent + ft["hhea"].lineGap) * scale,
                 m_AscentLine=ft["hhea"].ascent * scale, m_DescentLine=ft["hhea"].descent * scale,
                 m_CapLine=getattr(ft["OS/2"], "sCapHeight", ft["hhea"].ascent) * scale,

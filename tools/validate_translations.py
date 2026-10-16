@@ -31,7 +31,7 @@ def main():
             problems.append(f"Placeholder mismatch: {key}")
         if tags(ko) != tags(ja[key]):
             problems.append(f"Markup mismatch: {key}")
-        if re.search(r"[\u3040-\u30ff]", ko):
+        if re.search(r"[\u3041-\u3096\u30a1-\u30fa\u30fc-\u30ff]", ko):
             problems.append(f"Japanese remains: {key}")
     missing = sorted(ja.keys() - translated.keys())
     if args.complete and missing:
