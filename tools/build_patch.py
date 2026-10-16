@@ -10,6 +10,7 @@ from inventory import DEFAULT_GAME, digest
 from extract_localization import parse_table, build_table
 from korean_font import install_font
 from addressables import update_catalog
+from validate_translations import validate
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -21,6 +22,18 @@ def load_translations():
         if overlap:
             raise ValueError(f"Duplicate translation keys: {overlap}")
         merged.update(rows)
+    alias_path = ROOT / "translations/aliases.json"
+    if alias_path.exists():
+        aliases = json.loads(alias_path.read_text("utf-8"))
+        japanese = json.loads((ROOT / "reference/localization/JA.json").read_text("utf-8"))
+        for key, target in aliases.items():
+            if key in merged:
+                raise ValueError(f"Alias also has an explicit translation: {key}")
+            if key not in japanese or target not in japanese or japanese[key] != japanese[target]:
+                raise ValueError(f"Alias source text differs: {key} -> {target}")
+            if target not in merged:
+                raise ValueError(f"Alias target is untranslated: {key} -> {target}")
+            merged[key] = merged[target]
     return merged
 
 def main():
@@ -64,6 +77,9 @@ def main():
     objects = {o.path_id: o for o in env.objects}
     header, _ = parse_table(objects[1485].get_raw_data())
     _, japanese = parse_table(objects[1488].get_raw_data())
+    problems = validate(dict(japanese), translated)
+    if problems:
+        raise ValueError("Invalid translations: " + "; ".join(problems))
     missing = [key for key, _ in japanese if key not in translated]
     extra = translated.keys() - dict(japanese).keys()
     if extra:

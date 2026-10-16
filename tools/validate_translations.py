@@ -5,7 +5,8 @@ from collections import Counter
 import json
 from pathlib import Path
 import re
-from build_patch import load_translations
+
+ROOT = Path(__file__).resolve().parents[1]
 
 def placeholders(text):
     return Counter(re.findall(r"\{\d+(?:[^{}]*)\}", text))
@@ -13,12 +14,9 @@ def placeholders(text):
 def tags(text):
     return Counter(re.findall(r"</?[^<>]+>|\[br\]", text))
 
-def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--complete", action="store_true")
-    args = parser.parse_args()
-    ja = json.loads(Path("reference/localization/JA.json").read_text("utf-8"))
-    translated = load_translations()
+def validate(ja, translated):
+    fixes_path = ROOT / "translations/markup_fixes.json"
+    fixes = json.loads(fixes_path.read_text("utf-8")) if fixes_path.exists() else {}
     problems = []
     for key, ko in translated.items():
         if key not in ja:
@@ -29,10 +27,27 @@ def main():
             continue
         if placeholders(ko) != placeholders(ja[key]):
             problems.append(f"Placeholder mismatch: {key}")
-        if tags(ko) != tags(ja[key]):
+        expected = tags(ja[key])
+        if key in fixes:
+            fix = fixes[key]
+            if expected != Counter(fix["original_tags"]):
+                problems.append(f"Markup correction source changed: {key}")
+            expected = Counter(fix["corrected_tags"])
+        if tags(ko) != expected:
             problems.append(f"Markup mismatch: {key}")
         if re.search(r"[\u3041-\u3096\u30a1-\u30fa\u30fc-\u30ff]", ko):
             problems.append(f"Japanese remains: {key}")
+    return problems
+
+
+def main():
+    from build_patch import load_translations
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--complete", action="store_true")
+    args = parser.parse_args()
+    ja = json.loads((ROOT / "reference/localization/JA.json").read_text("utf-8"))
+    translated = load_translations()
+    problems = validate(ja, translated)
     missing = sorted(ja.keys() - translated.keys())
     if args.complete and missing:
         problems.append(f"Untranslated: {len(missing)}")

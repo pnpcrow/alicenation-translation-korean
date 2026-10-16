@@ -1,0 +1,7 @@
+{
+  "CardInfo_info_Task107": {
+    "original_tags": ["<b>", "<b>"],
+    "corrected_tags": ["<b>", "</b>"],
+    "reason": "Japanese and English sources accidentally open bold twice; close the second tag to limit emphasis to the intended phrase."
+  }
+}

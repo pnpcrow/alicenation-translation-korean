@@ -1,0 +1,45 @@
+{
+  "as_of": "2026-10-17",
+  "coverage": {
+    "CardInfo": {
+      "translated": 1033,
+      "total": 1033
+    },
+    "CardBuffInfo": {
+      "translated": 188,
+      "total": 188
+    },
+    "EventInfo": {
+      "translated": 79,
+      "total": 79
+    },
+    "CommandInfo": {
+      "translated": 88,
+      "total": 88
+    },
+    "Label": {
+      "translated": 100,
+      "total": 100
+    },
+    "TaskInfo": {
+      "translated": 94,
+      "total": 94
+    },
+    "Scan": {
+      "translated": 8,
+      "total": 8
+    },
+    "Dialogue": {
+      "translated": 0,
+      "total": 5780
+    },
+    "HelpInfo": {
+      "translated": 40,
+      "total": 40
+    }
+  },
+  "translated": 1630,
+  "total": 7410,
+  "status": "in_progress",
+  "note": "Coverage indicates authored entries, not final linguistic or gameplay QA."
+}
