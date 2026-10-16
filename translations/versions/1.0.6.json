@@ -1,0 +1,15 @@
+{
+  "base_version": "1.0.5",
+  "removed": ["你在说什么，呀三月兔。"],
+  "added": {
+    "CardInfo_name_TaskCommon": {"ja": "", "cn": "任务系统模板", "ko": "퀘스트 시스템 템플릿"},
+    "CardInfo_info_TaskCommon": {"ja": "", "cn": "任务系统模板", "ko": "퀘스트 시스템 템플릿"},
+    "你在说什么呀，三月兔。": {"ja": "何を言ってるの、三月ウサギ。", "ko": "무슨 소리야, 삼월 토끼."},
+    "你需要帮忙吗？": {"ja": "手を貸そうか？", "ko": "도와줄까?"},
+    "说吧，什么委托。": {"ja": "話してみろ。どんな依頼だ。", "ko": "말해 봐. 무슨 의뢰야?"},
+    "我们需要一把钥匙。": {"ja": "鍵が必要なんだ。", "ko": "열쇠가 필요해."},
+    "星银就在那个保险库中，也许……我们可以去找<b>神秘学</b>的“专家”来帮忙。": {"ja": "星銀はあの保管庫の中にある。もしかしたら……<b>オカルト</b>の「専門家」に助けてもらえるかも。", "ko": "별은은 저 보관고 안에 있어. 어쩌면…… <b>오컬트</b> ‘전문가’에게 도움을 받을 수 있을지도 몰라."},
+    "……沙月应该不知道。": {"ja": "……サツキは知らないはず。", "ko": "……사츠키는 모를 거야."}
+  },
+  "notes": "The two TaskCommon entries have empty JA/EN/TC values; their CN values are the only supplied source. The renamed Chapter2 line retains the existing Korean translation. New dialogue speakers and ChapterHelp contexts were checked in the 1.0.6 story objects."
+}

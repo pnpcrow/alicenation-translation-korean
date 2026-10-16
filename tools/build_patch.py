@@ -15,10 +15,11 @@ from validate_translations import validate
 from dialogue import load_dialogue
 import tutorial_atlas
 import static_ui
+import game_versions
 
 ROOT = Path(__file__).resolve().parents[1]
 
-def load_translations():
+def load_translations(version="1.0.5"):
     merged = {}
     for path in sorted((ROOT / "translations/ko").glob("*.json")):
         rows = json.loads(path.read_text("utf-8"))
@@ -42,7 +43,7 @@ def load_translations():
             if target not in merged:
                 raise ValueError(f"Alias target is untranslated: {key} -> {target}")
             merged[key] = merged[target]
-    return merged
+    return game_versions.adapt_translations(merged, version)
 
 def main():
     parser = argparse.ArgumentParser()
@@ -52,7 +53,8 @@ def main():
     args = parser.parse_args()
     if args.output.resolve() == args.game.resolve() or args.game.resolve() in args.output.resolve().parents:
         raise ValueError("Output must be outside the game directory")
-    inventory = json.loads((ROOT / "work/inventory.json").read_text("utf-8"))
+    version = game_versions.detect(args.game)
+    inventory = json.loads(game_versions.inventory_path(version).read_text("utf-8"))
     baseline = {r["path"]: r for r in inventory["files"]}
     object_index = json.loads((ROOT / "work/analysis/objects.json").read_text("utf-8"))
     records = {}
@@ -81,9 +83,9 @@ def main():
 
     version_env = UnityPy.load(str(source("alicenation_Data/globalgamemanagers")))
     version = next(o.read_typetree()["bundleVersion"] for o in version_env.objects if o.type.name == "PlayerSettings")
-    if version != "1.0.5":
+    if version not in game_versions.SUPPORTED:
         raise ValueError(f"Unsupported game version: {version}")
-    translated = load_translations()
+    translated = load_translations(version)
     font_rel = next(r["path"] for r in inventory["files"] if "/fonts_assets_all_" in r["path"])
     font_env = UnityPy.load(str(source(font_rel)))
     font_objects = {o.path_id: o for o in font_env.objects}
@@ -120,11 +122,7 @@ def main():
 
     # CN should consult the translation table like EN/JA instead of returning the key.
     rel = "GameAssembly.dll"
-    binary = bytearray(source(rel).read_bytes())
-    offset = 0x51CA79
-    if binary[offset:offset + 2] != b"\x75\x4a":
-        raise ValueError("LocalizationText branch does not match verified 1.0.5 code")
-    binary[offset:offset + 2] = b"\x90\x90"
+    binary = game_versions.patch_localization_branch(source(rel).read_bytes(), version)
     save(rel, binary)
 
     # Language buttons are serialized text rather than localization table values.

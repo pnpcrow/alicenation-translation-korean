@@ -17,6 +17,7 @@ from korean_font import DEFAULT_FONT, FONT_ID, TMP_ID, ATLAS_ID, MATERIAL_ID, pp
 from inventory import DEFAULT_GAME
 import tutorial_atlas
 import static_ui
+import game_versions
 
 
 def verify_font(objects, nodes, existing_ids):
@@ -49,19 +50,28 @@ def main():
     parser.add_argument("--game", type=Path, default=DEFAULT_GAME)
     args = parser.parse_args()
     manifest = json.loads((args.patch / "manifest.json").read_text("utf-8"))
+    version = game_versions.detect(args.game)
+    assert manifest["game_version"] == version
     assert len({r["path"] for r in manifest["files"]}) == len(manifest["files"]), "Duplicate patch paths"
     for row in manifest["files"]:
         path = args.patch / row["path"]
         assert path.stat().st_size == row["size"], row["path"]
         assert digest(path) == row["patched_sha256"], row["path"]
+        assert digest(args.game / row["path"]) == row["original_sha256"], row["path"]
+    assert (args.patch / "GameAssembly.dll").read_bytes() == game_versions.patch_localization_branch(
+        (args.game / "GameAssembly.dll").read_bytes(), version)
     env = UnityPy.load(str(args.patch / "alicenation_Data/resources.assets"))
     objects = {o.path_id: o for o in env.objects}
     _, cn = parse_table(objects[1485].get_raw_data())
     _, ja = parse_table(objects[1488].get_raw_data())
-    translated = load_translations()
+    translated = load_translations(version)
     assert cn == [(key, translated.get(key, value)) for key, value in ja]
     assert len(translated) == manifest["translated"]
     original_resources = UnityPy.load(str(args.game / "alicenation_Data/resources.assets"))
+    original_objects = {o.path_id: o for o in original_resources.objects}
+    # Preserve updated gameplay configuration, all scripts and comparison languages.
+    for oid in [1477, 1479, 1480, 1486, 1487, 1488, *range(1498, 1515)]:
+        assert original_objects[oid].get_raw_data() == objects[oid].get_raw_data(), oid
     settings = next(o for o in original_resources.objects if o.path_id == 1496).get_raw_data()
     assert len(settings) == 300 and settings[296:] == bytes(4)
     assert objects[1496].get_raw_data() == settings[:296] + b"\x01\x00\x00\x00"

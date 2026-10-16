@@ -46,11 +46,13 @@ def validate(ja, translated):
 
 def main():
     from build_patch import load_translations
+    import game_versions
     parser = argparse.ArgumentParser()
     parser.add_argument("--complete", action="store_true")
+    parser.add_argument("--version", choices=game_versions.SUPPORTED, default="1.0.5")
     args = parser.parse_args()
-    ja = json.loads((ROOT / "reference/localization/JA.json").read_text("utf-8"))
-    translated = load_translations()
+    ja = json.loads((game_versions.reference_dir(args.version) / "JA.json").read_text("utf-8"))
+    translated = load_translations(args.version)
     problems = validate(ja, translated)
     missing = sorted(ja.keys() - translated.keys())
     if args.complete and missing:
