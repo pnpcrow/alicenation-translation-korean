@@ -41,6 +41,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("start", type=int)
     parser.add_argument("count", type=int, nargs="?", default=100)
+    parser.add_argument("--compact", action="store_true", help="Show JA/EN and speaker/scene without repeating source keys")
     args = parser.parse_args()
     rows = source_rows()
     en = json.loads((ROOT / "reference/localization/EN.json").read_text("utf-8"))
@@ -49,6 +50,13 @@ def main():
     print(f"source_sha256: {source_hash(rows)}")
     for index in range(args.start, min(args.start + args.count, len(rows))):
         key, ja = rows[index]
+        if args.compact:
+            locations = []
+            for context in contexts.get(key, []):
+                speaker = re.search(r"(?:^| )char:(\S+)", context["content"])
+                locations.append(f'{context["script"]}/{context["block"]}:{speaker[1] if speaker else "narrator"}')
+            print(json.dumps([index, ja, en[key], locations], ensure_ascii=False))
+            continue
         print(json.dumps({"index": index, "ja": ja, "en": en[key],
                           "contexts": contexts.get(key, [])}, ensure_ascii=False))
 
