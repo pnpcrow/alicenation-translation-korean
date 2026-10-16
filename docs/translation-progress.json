@@ -40,6 +40,6 @@
   },
   "translated": 7410,
   "total": 7410,
-  "status": "in_progress",
-  "note": "Coverage indicates authored entries, not final linguistic or gameplay QA."
+  "status": "v1_released_for_1.0.5",
+  "note": "All 7410 entries authored; static resource, font, graphics and installer checks passed. Title, language menu, prologue, introductory tutorial and help visually checked. Every story branch and ending has not been played end to end. Steam 1.0.6 is outside this release's compatibility."
 }

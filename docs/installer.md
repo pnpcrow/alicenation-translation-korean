@@ -1,6 +1,8 @@
 # Rust 인스톨러 개발 기록
 
-현재는 시험본이다. 전체 번역과 그래픽 검증이 끝난 뒤 v1 배포 파일을 만든다.
+Windows 게임 1.0.5용 한국어 패치 v1이다. 배포 파일은
+`dist/Alicenation-1.0.5-Korean-v1.zip`이며 Rust 실행 파일, 사용 안내와 라이선스 고지를 포함한다.
+Steam의 현재 1.0.6 설치본에는 이 패치를 적용하지 않는다.
 
 ## 기능
 
@@ -17,11 +19,14 @@
 
 ## 빌드
 
-저장소 루트에서 리소스를 빌드한다. 미번역이 있는 동안은 `--draft`를 붙여야 한다.
+저장소 루트에서 검증된 1.0.5 원본 사본으로 리소스를 빌드한다.
+`reference`의 추출 자료와 `work/inventory.json`, `work/analysis/objects.json`은 로컬 분석 산출물이다.
+현재 Steam 설치본을 기본 경로로 사용하면 원본 버전/해시 검사에서 거부된다.
 
 ```powershell
-python -X utf8 tools/build_patch.py --draft
-python -X utf8 tools/verify_patch.py
+python -X utf8 tools/validate_translations.py --complete
+python -X utf8 tools/build_patch.py --game work/baseline-1.0.5
+python -X utf8 tools/verify_patch.py --game work/baseline-1.0.5
 ```
 
 인스톨러 폴더에서 델타 생성 도구를 빌드한다.
@@ -30,13 +35,14 @@ python -X utf8 tools/verify_patch.py
 cargo build --release --no-default-features --bin pack-payload
 ```
 
-`pack-payload <원본 게임 폴더> <패치 폴더> <새 출력 파일.akp> --allow-draft`로
-시험 패키지를 만든다. 완성본에는 `--allow-draft`를 사용하지 않는다.
+`pack-payload <원본 게임 폴더> <패치 폴더> <새 출력 파일.akp>`로 패키지를 만든다.
+완성본에는 `--allow-draft`를 사용하지 않는다.
 기존 출력 패키지는 덮어쓰지 않으므로 새 출력 이름을 지정한다.
 
 ```powershell
-$env:ALICE_PAYLOAD = (Resolve-Path '../work/installer-qa-v1-draft.akp').Path
-cargo build --release --bin alicenation-korean
+target/release/pack-payload.exe ../work/baseline-1.0.5 ../work/patched ../work/alicenation-1.0.5-korean-v1-final.akp
+$env:ALICE_PAYLOAD = (Resolve-Path '../work/alicenation-1.0.5-korean-v1-final.akp').Path
+cargo build --locked --release --bin alicenation-korean
 ```
 
 GUI 실행 파일에 델타 패키지와 한국어 글꼴이 포함된다. 별도 런타임 설치는 필요하지 않다.
@@ -46,18 +52,29 @@ CLI 전용 빌드는 `--no-default-features`를 붙인다.
 
 ```text
 alicenation-korean status --game <폴더>
-alicenation-korean patch --game <폴더> --package <파일.akp> --allow-draft
+alicenation-korean patch --game <폴더>
 alicenation-korean restore --game <폴더>
 ```
 
 ## 검증
 
-`cargo test --no-default-features`: 실제 파일 교체와 장애 복구를 포함한 10개 테스트.
+`cargo test --locked`: 실제 파일 교체와 장애 복구를 포함한 10개 테스트.
 `cargo clippy --all-targets -- -D warnings`: 경고 없이 통과.
 `tools/test_installer.py`: 원본 게임을 복제한 전용 폴더에서 두 차례 설치·복구와 중복 설치 확인.
 복구 후 398개 원본 해시 일치, 관계없는 파일 보존, 원래 Steam 설치 폴더 무변경을 확인했다.
 
-1,755개 번역을 담은 첫 시험 델타 패키지는 24,932,136바이트다. 정식 배포 크기는 달라진다.
+최종 델타 패키지는 59,005,336바이트, 실행 파일은 70,506,496바이트다.
+`static`으로 페이로드를 공유하며 실행 파일 안에 패키지가 정확히 한 번 들어가는지 확인한다.
+
+게임과 GUI를 종료한 뒤 저장소 루트에서 최종 실행 파일의 내장 패키지를 검사하고 배포한다.
+
+```powershell
+python -X utf8 tools/test_installer.py --embedded --exe installer/target/release/alicenation-korean.exe
+python -X utf8 tools/package_release.py
+```
+
+시험 폴더 `work/installer-qa-game`은 1.0.5 원본 전체와 보존 검사용 파일을 준비해야 한다.
+패키저는 기존 배포 폴더를 덮어쓰지 않는다. 재빌드에는 새 `--output` 경로를 지정할 수 있다.
 
 ## 구현 참고
 
@@ -66,4 +83,5 @@ alicenation-korean restore --game <폴더>
 인스톨러의 자체 파일 잠금은 [fs2](https://docs.rs/fs2/0.4.3/fs2/)를 사용한다.
 GUI는 eframe/egui 0.33.3, 폴더 선택은 rfd 0.15.4를 사용한다.
 
-최종 배포 시 폰트 OFL 및 Rust 의존성 고지를 함께 포함해야 한다.
+배포 ZIP에는 학교안심 그림일기 OFL, GUI 기본 글꼴 고지와 Windows 빌드에 사용한
+Rust 의존성 156개 고지를 포함한다. 원본 출처는 `assets/licenses/upstream/sources.json`에 기록했다.

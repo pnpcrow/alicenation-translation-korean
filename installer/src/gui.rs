@@ -165,7 +165,7 @@ impl eframe::App for App {
             )
             .show(ctx, |ui| {
                 ui.heading("앨리스와 피안");
-                ui.label("한국어 패치 · 게임 1.0.5");
+                ui.label("한국어 패치 v1 · 게임 1.0.5");
                 ui.small("일본어 기준 번역 / 학교안심 그림일기 글꼴");
                 if self.draft {
                     ui.colored_label(

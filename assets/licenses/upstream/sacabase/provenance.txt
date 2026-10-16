@@ -1,0 +1,3 @@
+sacabase 2.0.0 declares MIT in its published Cargo.toml; author: Amos Wenger.
+The crate omits a license file. Included text is the same author's MIT notice from the sibling divsufsort crate in the same repository commit.
+Source: https://raw.githubusercontent.com/fasterthanlime/stringsearch/acd5846b959884a1d24247038e9c52b5cf900f67/crates/divsufsort/LICENSE
