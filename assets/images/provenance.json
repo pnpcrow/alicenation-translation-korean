@@ -1,0 +1,11 @@
+{
+  "title_ko.png": {
+    "tool": "built-in image_gen",
+    "mode": "text-localization",
+    "reference": "Title_JA, path ID 4416297387995255551",
+    "date": "2026-10-16",
+    "text": ["앨리스와", "피안"],
+    "prompt": "Translate Japanese title logo to Korean: first line 앨리스와, second line 피안. Preserve thick dark plum outlines, white-to-pink letter gradients, cream outer stroke, textured pink sticker edge, rabbit ears and four-point sparkles. Accurate Hangul; no Japanese, English, extra words or watermark. Centered square sprite with transparent padding and true transparency.",
+    "status": "Generated; game integration and final visual QA pending"
+  }
+}
