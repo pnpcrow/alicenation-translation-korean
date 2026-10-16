@@ -82,5 +82,71 @@
     "date": "2026-10-17",
     "prompt_file": "prompts/help10.txt",
     "status": "Korean lettering and layout visually reviewed; game integration pending"
+  },
+  "fallback_ko.png": {
+    "tool": "built-in image_gen",
+    "mode": "text-localization",
+    "reference": "fallbackImage, path ID 40",
+    "date": "2026-10-17",
+    "prompt_file": "prompts/fallback.txt",
+    "status": "Generated lettering and composition visually checked; Unity pixel readback and bundle CRC checks passed; gameplay review pending"
+  },
+  "rumor_ko.png": {
+    "tool": "built-in image_gen",
+    "mode": "text-localization",
+    "reference": "Rumor, path ID 2874298158467608940",
+    "date": "2026-10-17",
+    "prompt_file": "prompts/rumor.txt",
+    "status": "Generated lettering and composition visually checked; Unity pixel readback and bundle CRC checks passed; gameplay review pending",
+    "cleanup_prompt_file": "prompts/rumor-cleanup.txt"
+  },
+  "illusion_ko.png": {
+    "tool": "built-in image_gen",
+    "mode": "text-localization",
+    "reference": "Illusion, path ID 7621777218032813901",
+    "date": "2026-10-17",
+    "prompt_file": "prompts/illusion.txt",
+    "status": "Generated lettering and composition visually checked; Unity pixel readback and bundle CRC checks passed; gameplay review pending",
+    "cleanup_prompt_file": "prompts/illusion-cleanup.txt"
+  },
+  "cg8_ko.png": {
+    "tool": "built-in image_gen",
+    "mode": "text-localization",
+    "reference": "cg8, path ID -2279856869508826472",
+    "date": "2026-10-17",
+    "prompt_file": "prompts/cg8.txt",
+    "status": "Generated lettering and composition visually checked; Unity pixel readback and bundle CRC checks passed; gameplay review pending"
+  },
+  "cg8_2_ko.png": {
+    "tool": "built-in image_gen",
+    "mode": "text-localization",
+    "reference": "cg8_2, path ID -1989756652581081444",
+    "date": "2026-10-17",
+    "prompt_file": "prompts/cg8_2.txt",
+    "status": "Generated lettering and composition visually checked; Unity pixel readback and bundle CRC checks passed; gameplay review pending"
+  },
+  "cg33_ko.png": {
+    "tool": "built-in image_gen",
+    "mode": "text-localization",
+    "reference": "cg33, path ID 6280065531925318838",
+    "date": "2026-10-17",
+    "prompt_file": "prompts/cg33.txt",
+    "status": "Generated lettering and composition visually checked; Unity pixel readback and bundle CRC checks passed; gameplay review pending"
+  },
+  "cg33_2_ko.png": {
+    "tool": "built-in image_gen",
+    "mode": "text-localization",
+    "reference": "cg33_2, path ID -231902222497906199",
+    "date": "2026-10-17",
+    "prompt_file": "prompts/cg33_2.txt",
+    "status": "Generated lettering and composition visually checked; Unity pixel readback and bundle CRC checks passed; gameplay review pending"
+  },
+  "cg33_3_ko.png": {
+    "tool": "built-in image_gen",
+    "mode": "text-localization",
+    "reference": "cg33_3, path ID -4696216202012763771",
+    "date": "2026-10-17",
+    "prompt_file": "prompts/cg33_3.txt",
+    "status": "Generated lettering and composition visually checked; Unity pixel readback and bundle CRC checks passed; gameplay review pending"
   }
 }

@@ -53,7 +53,7 @@ def main():
     inventory = json.loads((ROOT / "work/inventory.json").read_text("utf-8"))
     baseline = {r["path"]: r for r in inventory["files"]}
     object_index = json.loads((ROOT / "work/analysis/objects.json").read_text("utf-8"))
-    records = []
+    records = {}
 
     def source(rel):
         path = args.game / rel
@@ -65,8 +65,17 @@ def main():
         path = args.output / rel
         path.parent.mkdir(parents=True, exist_ok=True)
         path.write_bytes(data)
-        records.append({"path": rel, "original_sha256": baseline[rel]["sha256"],
-                        "patched_sha256": digest(path), "size": path.stat().st_size})
+        records[rel] = {"path": rel, "original_sha256": baseline[rel]["sha256"],
+                        "patched_sha256": digest(path), "size": path.stat().st_size}
+
+    def current_source(rel):
+        original = source(rel)
+        if rel not in records:
+            return original
+        current = args.output / rel
+        if digest(current) != records[rel]["patched_sha256"]:
+            raise ValueError(f"Intermediate patch file has changed: {rel}")
+        return current
 
     version_env = UnityPy.load(str(source("alicenation_Data/globalgamemanagers")))
     version = next(o.read_typetree()["bundleVersion"] for o in version_env.objects if o.type.name == "PlayerSettings")
@@ -137,7 +146,9 @@ def main():
             raise ValueError(f"Ambiguous graphic target: {entry}")
         image_bundles[matches[0]["source"]].append(entry)
     for rel, entries in image_bundles.items():
-        env = UnityPy.load(str(source(rel)))
+        # resources.assets also holds the translated table and font fallback.
+        # Keep earlier edits when a texture shares their serialized file.
+        env = UnityPy.load(str(current_source(rel)))
         for entry in entries:
             obj = next(o for o in env.objects if o.path_id == entry["path_id"])
             data = obj.read()
@@ -145,14 +156,15 @@ def main():
             # Import-time resampling only; artwork and lettering remain image_gen output.
             data.set_image(image.resize((data.m_Width, data.m_Height), Image.Resampling.LANCZOS), target_format=4)
             data.save()
-        save(rel, env.file.save(packer="lz4"))
+        data = env.file.save(packer="lz4") if isinstance(env.file, UnityPy.files.BundleFile) else env.file.save()
+        save(rel, data)
 
     rel = "alicenation_Data/StreamingAssets/aa/catalog.json"
-    save(rel, update_catalog(source(rel), args.game, args.output, [r["path"] for r in records]))
+    save(rel, update_catalog(source(rel), args.game, args.output, list(records)))
 
     args.output.mkdir(parents=True, exist_ok=True)
     (args.output / "manifest.json").write_text(json.dumps({"game_version": version, "patch_version": "v1-draft" if missing else "v1",
-        "translated": len(translated), "total": len(japanese), "missing": len(missing), "files": records}, ensure_ascii=False, indent=2), "utf-8")
+        "translated": len(translated), "total": len(japanese), "missing": len(missing), "files": list(records.values())}, ensure_ascii=False, indent=2), "utf-8")
     print(f"Built {len(records)} patched files in {args.output}")
 
 if __name__ == "__main__":

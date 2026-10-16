@@ -3,14 +3,41 @@ from __future__ import annotations
 import argparse
 import base64
 import json
+import io
 import struct
 from pathlib import Path
 import UnityPy
 from PIL import Image
+from fontTools.ttLib import TTFont
 from addressables import bundle_crc
 from build_patch import ROOT, load_translations
 from extract_localization import parse_table
 from inventory import digest
+from korean_font import DEFAULT_FONT, FONT_ID, TMP_ID, ATLAS_ID, MATERIAL_ID, pptr, is_hangul
+
+
+def verify_font(objects, nodes, existing_ids):
+    """Regression check: image imports must retain the complete Korean fallback."""
+    font_data = objects[FONT_ID].read_typetree()
+    assert bytes(font_data["m_FontData"]) == DEFAULT_FONT.read_bytes()
+    tmp = objects[TMP_ID].read_typetree(nodes=nodes)
+    assert tmp["m_SourceFontFile"] == pptr(FONT_ID)
+    assert tmp["m_Material"] == pptr(MATERIAL_ID)
+    assert tmp["m_AtlasTextures"] == [pptr(ATLAS_ID)]
+    assert tmp["m_AtlasPopulationMode"] == 1
+    assert tmp["m_IsMultiAtlasTexturesEnabled"] == 1
+    atlas = objects[ATLAS_ID].read_typetree()
+    assert atlas["m_Width"] == atlas["m_Height"] == 1024
+    assert atlas["m_TextureFormat"] == 1
+    for object_id in existing_ids:
+        data = objects[object_id].read_typetree(nodes=nodes)
+        assert data["m_FallbackFontAssetTable"][0] == pptr(TMP_ID)
+        assert not any(is_hangul(c["m_Unicode"]) for c in data["m_CharacterTable"])
+        original = objects[data["m_SourceFontFile"]["m_PathID"]].read_typetree()
+        ft = TTFont(io.BytesIO(bytes(original["m_FontData"])))
+        assert not any(is_hangul(cp) for cp in ft.getBestCmap())
+    ft = TTFont(io.BytesIO(bytes(font_data["m_FontData"])))
+    assert set(range(0xAC00, 0xD7A4)) <= ft.getBestCmap().keys()
 
 
 def main():
@@ -18,6 +45,7 @@ def main():
     parser.add_argument("--patch", type=Path, default=ROOT / "work/patched")
     args = parser.parse_args()
     manifest = json.loads((args.patch / "manifest.json").read_text("utf-8"))
+    assert len({r["path"] for r in manifest["files"]}) == len(manifest["files"]), "Duplicate patch paths"
     for row in manifest["files"]:
         path = args.patch / row["path"]
         assert path.stat().st_size == row["size"], row["path"]
@@ -29,6 +57,13 @@ def main():
     translated = load_translations()
     assert cn == [(key, translated.get(key, value)) for key, value in ja]
     assert len(translated) == manifest["translated"]
+    font_rel, = [r["path"] for r in manifest["files"] if "/fonts_assets_all_" in r["path"]]
+    font_env = UnityPy.load(str(args.patch / font_rel))
+    font_objects = {o.path_id: o for o in font_env.objects}
+    template = font_objects[-1116400722278560788]
+    verify_font(objects, template.serialized_type.node, [1474, 1475])
+    verify_font(font_objects, template.serialized_type.node,
+                [-8044376927816756463, -5279115822797500961, template.path_id])
     index = json.loads((ROOT / "work/analysis/objects.json").read_text("utf-8"))
     images = json.loads((ROOT / "assets/images/manifest.json").read_text("utf-8"))
     for row in images:
@@ -56,7 +91,7 @@ def main():
                 assert data["m_BundleSize"] == (args.patch / rel).stat().st_size, rel
                 checked.add(rel)
     assert checked == bundles
-    print(f"Verified {len(manifest['files'])} file hashes, {len(cn)} text records, {len(images)} images, {len(checked)} bundle CRCs")
+    print(f"Verified {len(manifest['files'])} file hashes, {len(cn)} text records, 2 complete Korean font fallbacks, {len(images)} images, {len(checked)} bundle CRCs")
 
 
 if __name__ == "__main__":

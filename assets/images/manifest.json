@@ -48,5 +48,45 @@
     "texture_name": "Help10",
     "path_id": 343534899686674049,
     "file": "help10_ko.png"
+  },
+  {
+    "texture_name": "fallbackImage",
+    "path_id": 40,
+    "file": "fallback_ko.png"
+  },
+  {
+    "texture_name": "Rumor",
+    "path_id": 2874298158467608940,
+    "file": "rumor_ko.png"
+  },
+  {
+    "texture_name": "Illusion",
+    "path_id": 7621777218032813901,
+    "file": "illusion_ko.png"
+  },
+  {
+    "texture_name": "cg8",
+    "path_id": -2279856869508826472,
+    "file": "cg8_ko.png"
+  },
+  {
+    "texture_name": "cg8_2",
+    "path_id": -1989756652581081444,
+    "file": "cg8_2_ko.png"
+  },
+  {
+    "texture_name": "cg33",
+    "path_id": 6280065531925318838,
+    "file": "cg33_ko.png"
+  },
+  {
+    "texture_name": "cg33_2",
+    "path_id": -231902222497906199,
+    "file": "cg33_2_ko.png"
+  },
+  {
+    "texture_name": "cg33_3",
+    "path_id": -4696216202012763771,
+    "file": "cg33_3_ko.png"
   }
 ]
