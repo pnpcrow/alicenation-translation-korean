@@ -3,5 +3,25 @@
     "original_tags": ["<b>", "<b>"],
     "corrected_tags": ["<b>", "</b>"],
     "reason": "Japanese and English sources accidentally open bold twice; close the second tag to limit emphasis to the intended phrase."
+  },
+  "<i>（这家伙在变大）<i>": {
+    "original_tags": ["<i>", "<i>"],
+    "corrected_tags": ["<i>", "</i>"],
+    "reason": "The original repeats an opening italic tag; close the parenthesized stage direction."
+  },
+  "<i>（吼叫）<i>": {
+    "original_tags": ["<i>", "<i>"],
+    "corrected_tags": ["<i>", "</i>"],
+    "reason": "The original repeats an opening italic tag; close the parenthesized stage direction."
+  },
+  "<i>（叽～叽～）<i>": {
+    "original_tags": ["<i>", "<i>"],
+    "corrected_tags": ["<i>", "</i>"],
+    "reason": "The original repeats an opening italic tag; close the parenthesized stage direction."
+  },
+  "<i>（窃窃私语）<i>": {
+    "original_tags": ["<i>", "<i>"],
+    "corrected_tags": ["<i>", "</i>"],
+    "reason": "The original repeats an opening italic tag; close the parenthesized stage direction."
   }
 }
