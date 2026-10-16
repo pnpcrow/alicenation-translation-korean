@@ -16,6 +16,7 @@ from inventory import digest
 from korean_font import DEFAULT_FONT, FONT_ID, TMP_ID, ATLAS_ID, MATERIAL_ID, pptr, is_hangul
 from inventory import DEFAULT_GAME
 import tutorial_atlas
+import static_ui
 
 
 def verify_font(objects, nodes, existing_ids):
@@ -78,6 +79,8 @@ def main():
         assert actual.tobytes() == expected.tobytes(), row["file"]
     tutorial = tutorial_atlas.verify(args.game / tutorial_atlas.bundle_path(), args.patch / tutorial_atlas.bundle_path())
     assert tutorial == manifest["tutorial"]
+    static_count = static_ui.verify(args.game, args.patch)
+    assert static_count == manifest["static_ui"]
     catalog = json.loads((args.patch / "alicenation_Data/StreamingAssets/aa/catalog.json").read_text("utf-8"))
     extra = base64.b64decode(catalog["m_ExtraDataString"])
     entries = base64.b64decode(catalog["m_EntryDataString"])
@@ -96,7 +99,7 @@ def main():
                 assert data["m_BundleSize"] == (args.patch / rel).stat().st_size, rel
                 checked.add(rel)
     assert checked == bundles
-    print(f"Verified {len(manifest['files'])} file hashes, {len(cn)} text records, 2 complete Korean font fallbacks, {len(images)} images, 52 tutorial sprite layouts/pixels ({tutorial['translated']} translated), {len(checked)} bundle CRCs")
+    print(f"Verified {len(manifest['files'])} file hashes, {len(cn)} text records, {static_count} static labels, 2 complete Korean font fallbacks, {len(images)} images, 52 tutorial sprite layouts/pixels ({tutorial['translated']} translated), {len(checked)} bundle CRCs")
 
 
 if __name__ == "__main__":

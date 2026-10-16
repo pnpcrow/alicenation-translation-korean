@@ -11,8 +11,12 @@
   },
   {
     "name": "CardMap",
-    "status": "pending",
-    "reason": "Visible text requires Korean localization"
+    "status": "translated",
+    "reason": "Localized by removing only unreadable clipped text at top edge; no guessed quest sentence. Codex icon, red pointer and EXP 7 preserved. Native-size visual comparison passed; runtime QA pending.",
+    "file": "CardMap.png",
+    "prompt_file": "prompts/CardMap.txt",
+    "tool": "built-in image_gen",
+    "date": "2026-10-17"
   },
   {
     "name": "ColdDown",

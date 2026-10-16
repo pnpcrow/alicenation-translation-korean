@@ -14,6 +14,7 @@ from addressables import update_catalog
 from validate_translations import validate
 from dialogue import load_dialogue
 import tutorial_atlas
+import static_ui
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -141,6 +142,9 @@ def main():
         raise ValueError(f"Expected two CN language labels, found {changed}")
     save(rel, env.file.save(packer="lz4"))
 
+    for rel, entries in static_ui.grouped().items():
+        save(rel, static_ui.build(current_source(rel), entries))
+
     image_entries = json.loads((ROOT / "assets/images/manifest.json").read_text("utf-8"))
     image_bundles = defaultdict(list)
     for entry in image_entries:
@@ -173,7 +177,8 @@ def main():
     (args.output / "manifest.json").write_text(json.dumps({"game_version": version,
         "patch_version": "v1-draft" if missing or tutorial["pending"] else "v1",
         "translated": len(translated), "total": len(japanese), "missing": len(missing),
-        "tutorial": tutorial, "files": list(records.values())}, ensure_ascii=False, indent=2), "utf-8")
+        "tutorial": tutorial, "static_ui": len(static_ui.entries()),
+        "files": list(records.values())}, ensure_ascii=False, indent=2), "utf-8")
     print(f"Built {len(records)} patched files in {args.output}")
 
 if __name__ == "__main__":
