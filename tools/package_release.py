@@ -6,6 +6,7 @@ import json
 from pathlib import Path
 import shutil
 import subprocess
+import struct
 import zipfile
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -13,6 +14,25 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def sha(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def payload_manifests(data):
+    if data[:8] == b"ALICKO2\n":
+        count, = struct.unpack_from("<Q", data, 8)
+        assert 1 <= count <= 2
+        result, cursor = [], 16
+        for _ in range(count):
+            size, = struct.unpack_from("<Q", data, cursor)
+            cursor += 8
+            chunk = data[cursor:cursor + size]
+            assert len(chunk) == size and chunk[:8] == b"ALICKO1\n"
+            result.extend(payload_manifests(chunk))
+            cursor += size
+        assert cursor == len(data)
+        return result
+    assert data[:8] == b"ALICKO1\n"
+    size, = struct.unpack_from("<Q", data, 8)
+    return [json.loads(data[16:16 + size])]
 
 
 def notices(destination):
@@ -56,20 +76,32 @@ def notices(destination):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--exe", type=Path, default=ROOT / "installer/target/release/alicenation-korean.exe")
-    parser.add_argument("--patch", type=Path, default=ROOT / "work/patched")
-    parser.add_argument("--output", type=Path, default=ROOT / "dist/Alicenation-1.0.5-Korean-v1")
+    parser.add_argument("--patch", type=Path, action="append", help="Repeat for each supported game version")
+    parser.add_argument("--payload", type=Path, default=ROOT / "work/alicenation-1.0.5-1.0.6-korean-v1.akp")
+    parser.add_argument("--output", type=Path, default=ROOT / "dist/Alicenation-1.0.5-1.0.6-Korean-v1")
     args = parser.parse_args()
-    manifest = json.loads((args.patch / "manifest.json").read_text("utf-8"))
-    assert manifest["patch_version"] == "v1" and manifest["missing"] == 0
-    assert manifest["tutorial"]["pending"] == 0 and manifest["static_ui"] == 90
+    patches = args.patch or [ROOT / "work/patched", ROOT / "work/patched-1.0.6"]
+    manifests = [json.loads((patch / "manifest.json").read_text("utf-8")) for patch in patches]
+    payload = args.payload.read_bytes()
+    assert args.exe.read_bytes().count(payload) == 1, "Executable does not contain this exact payload once"
+    embedded = {m["game_version"]: m for m in payload_manifests(payload)}
+    assert set(embedded) == {m["game_version"] for m in manifests}
+    for manifest in manifests:
+        assert manifest["patch_version"] == "v1" and manifest["missing"] == 0
+        assert manifest["tutorial"]["pending"] == 0 and manifest["static_ui"] == 90
+        packed = embedded[manifest["game_version"]]
+        assert not packed["draft"] and packed["patch_version"] == "v1"
+        fields = ("path", "original_sha256", "patched_sha256", "size")
+        assert [{k: r[k] for k in fields} for r in packed["files"]] == [{k: r[k] for k in fields} for r in manifest["files"]]
     args.output.mkdir(parents=True, exist_ok=False)
     exe = args.output / "Alicenation-Korean-v1.exe"
     shutil.copy2(args.exe, exe)
     count = notices(args.output / "licenses")
     shutil.copy2(ROOT / "docs/release-readme.txt", args.output / "사용안내.txt")
-    info = {"game_version": manifest["game_version"], "patch_version": "v1",
-            "text_entries": manifest["translated"], "static_labels": manifest["static_ui"],
-            "tutorial": manifest["tutorial"], "modified_files": len(manifest["files"]),
+    info = {"patch_version": "v1", "game_versions": [{"game_version": m["game_version"],
+            "text_entries": m["translated"], "static_labels": m["static_ui"],
+            "tutorial": m["tutorial"], "modified_files": len(m["files"])} for m in manifests],
+            "payload_sha256": sha(args.payload),
             "installer_sha256": sha(exe), "dependency_notices": count}
     (args.output / "build-info.json").write_text(json.dumps(info, ensure_ascii=False, indent=2) + "\n", "utf-8")
     archive = Path(str(args.output) + ".zip")

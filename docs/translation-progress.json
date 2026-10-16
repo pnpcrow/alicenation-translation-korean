@@ -40,6 +40,16 @@
   },
   "translated": 7410,
   "total": 7410,
-  "status": "v1_released_for_1.0.5",
-  "note": "All 7410 entries authored; static resource, font, graphics and installer checks passed. Title, language menu, prologue, introductory tutorial and help visually checked. Every story branch and ending has not been played end to end. Steam 1.0.6 is outside this release's compatibility."
+  "status": "v1_released_for_1.0.5_and_1.0.6",
+  "note": "Base coverage describes 1.0.5. Version 1.0.6 adds 8 keys and removes one typo key. Both versions use the same 90 static labels and 43 localized images. All branches and endings have not been played end to end.",
+  "versions": {
+    "1.0.5": {
+      "translated": 7410,
+      "total": 7410
+    },
+    "1.0.6": {
+      "translated": 7417,
+      "total": 7417
+    }
+  }
 }
