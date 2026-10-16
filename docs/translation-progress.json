@@ -30,7 +30,7 @@
       "total": 8
     },
     "Dialogue": {
-      "translated": 2225,
+      "translated": 3125,
       "total": 5780
     },
     "HelpInfo": {
@@ -38,7 +38,7 @@
       "total": 40
     }
   },
-  "translated": 3855,
+  "translated": 4755,
   "total": 7410,
   "status": "in_progress",
   "note": "Coverage indicates authored entries, not final linguistic or gameplay QA."
