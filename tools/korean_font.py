@@ -111,3 +111,17 @@ def install_font(objects, tmp_template, tmp_objects, source_font_id, font_file=D
             font.save(buf)
             fdata["m_FontData"] = list(buf.getvalue())
             source.save_typetree(fdata)
+def enable_korean_word_wrapping(objects):
+    """Enable TMP's serialized modern Hangul rule in the verified 1.0.5 settings.
+
+    TMP_Settings' final serialized field is m_UseModernHangulLineBreakingRules.
+    The settings object is stripped of its type tree; pin all original bytes
+    before changing its final aligned boolean at offset 296.
+    """
+    import hashlib
+    settings = objects[1496]
+    raw = settings.get_raw_data()
+    if hashlib.sha256(raw).hexdigest() != "d0352d05cf0b6af53ec6a1b570a8962397cb14b20c048380d92e7b67ccd1becb":
+        raise ValueError("TMP Settings do not match the verified Korean wrapping layout")
+    assert len(raw) == 300 and raw[296:] == bytes(4)
+    settings.set_raw_data(raw[:296] + b"\x01\x00\x00\x00")

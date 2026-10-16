@@ -61,6 +61,10 @@ def main():
     translated = load_translations()
     assert cn == [(key, translated.get(key, value)) for key, value in ja]
     assert len(translated) == manifest["translated"]
+    original_resources = UnityPy.load(str(args.game / "alicenation_Data/resources.assets"))
+    settings = next(o for o in original_resources.objects if o.path_id == 1496).get_raw_data()
+    assert len(settings) == 300 and settings[296:] == bytes(4)
+    assert objects[1496].get_raw_data() == settings[:296] + b"\x01\x00\x00\x00"
     font_rel, = [r["path"] for r in manifest["files"] if "/fonts_assets_all_" in r["path"]]
     font_env = UnityPy.load(str(args.patch / font_rel))
     font_objects = {o.path_id: o for o in font_env.objects}

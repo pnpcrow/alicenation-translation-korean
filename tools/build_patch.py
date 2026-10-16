@@ -9,7 +9,7 @@ import UnityPy
 from PIL import Image
 from inventory import DEFAULT_GAME, digest
 from extract_localization import parse_table, build_table
-from korean_font import install_font
+from korean_font import install_font, enable_korean_word_wrapping
 from addressables import update_catalog
 from validate_translations import validate
 from dialogue import load_dialogue
@@ -109,6 +109,7 @@ def main():
     rows = [(key, translated.get(key, value)) for key, value in japanese]
     objects[1485].set_raw_data(build_table(header, rows))
     install_font(objects, template, [objects[1474], objects[1475]], 542)
+    enable_korean_word_wrapping(objects)
     save(rel, env.file.save())
     print(f"Text: {len(translated)}/{len(japanese)}", flush=True)
 
