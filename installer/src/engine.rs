@@ -1,5 +1,5 @@
 use crate::{
-    package::{Manifest, Package, hash_file, validate_relative},
+    package::{Manifest, Package, PackageSet, hash_file, validate_relative},
     platform,
 };
 use anyhow::{Context, Result, bail, ensure};
@@ -29,6 +29,16 @@ struct State {
     format: u32,
     phase: Phase,
     manifest: Manifest,
+}
+
+impl State {
+    fn backup_path(&self, relative: &str) -> String {
+        if self.format == 1 {
+            format!("{STORE}/backup/{relative}")
+        } else {
+            format!("{STORE}/backup/{}/{relative}", self.manifest.game_version)
+        }
+    }
 }
 
 pub struct Engine {
@@ -83,7 +93,7 @@ impl Engine {
         );
         let state: State = serde_json::from_slice(&fs::read(path)?)
             .context("설치 기록이 손상되었습니다. 백업 폴더를 보존해 주세요")?;
-        ensure!(state.format == 1, "지원하지 않는 설치 기록");
+        ensure!([1, 2].contains(&state.format), "지원하지 않는 설치 기록");
         state.manifest.validate()?;
         Ok(Some(state))
     }
@@ -101,7 +111,8 @@ impl Engine {
         for guard in &manifest.guards {
             ensure!(
                 hash_file(&self.checked(&guard.path)?)? == guard.sha256,
-                "게임 1.0.5 원본과 일치하지 않습니다: {}. 다른 버전에는 적용할 수 없습니다",
+                "게임 {} 원본과 일치하지 않습니다: {}. 다른 버전에는 적용할 수 없습니다",
+                manifest.game_version,
                 guard.path
             );
         }
@@ -124,9 +135,6 @@ impl Engine {
         Ok(())
     }
 
-    fn backup_path(relative: &str) -> String {
-        format!("{STORE}/backup/{relative}")
-    }
     fn stage_path(index: usize) -> String {
         format!("{STORE}/stage/{index:04}.bin")
     }
@@ -175,6 +183,20 @@ impl Engine {
         self.install_with_hook(package, allow_draft, progress, &mut |_| Ok(()))
     }
 
+    pub fn install_available(
+        &self,
+        packages: &PackageSet<'_>,
+        allow_draft: bool,
+        progress: &mut dyn FnMut(&str),
+    ) -> Result<()> {
+        let package = packages.select(&self.root)?;
+        progress(&format!(
+            "게임 {}를 확인했습니다.",
+            package.manifest.game_version
+        ));
+        self.install(package, allow_draft, progress)
+    }
+
     fn install_with_hook(
         &self,
         package: &Package<'_>,
@@ -213,6 +235,11 @@ impl Engine {
                 Phase::Restored => (),
             }
         }
+        let state = State {
+            format: 2,
+            phase: Phase::Applying,
+            manifest: manifest.clone(),
+        };
         progress("게임 원본을 검증하고 있습니다.");
         for row in &manifest.files {
             let target = self.checked(&row.path)?;
@@ -222,7 +249,7 @@ impl Engine {
                 "원본 파일이 일치하지 않습니다: {}. 게임 버전이나 다른 패치 적용 여부를 확인해 주세요",
                 row.path
             );
-            let backup = self.checked(&Self::backup_path(&row.path))?;
+            let backup = self.checked(&state.backup_path(&row.path))?;
             if backup.exists() {
                 ensure!(
                     hash_file(&backup)? == row.original_sha256,
@@ -250,7 +277,7 @@ impl Engine {
                 row.path
             ));
             let original_path = self.checked(&row.path)?;
-            let backup_rel = Self::backup_path(&row.path);
+            let backup_rel = state.backup_path(&row.path);
             let backup = self.checked(&backup_rel)?;
             if !backup.exists() {
                 self.copy_verified(&original_path, &backup_rel, &row.original_sha256)?;
@@ -292,11 +319,6 @@ impl Engine {
                 row.path
             );
         }
-        let state = State {
-            format: 1,
-            phase: Phase::Applying,
-            manifest: manifest.clone(),
-        };
         self.write_state(&state)?;
         let commit = (|| -> Result<()> {
             for (index, row) in manifest.files.iter().enumerate() {
@@ -350,7 +372,7 @@ impl Engine {
         progress("현재 파일과 원본 백업을 검증하고 있습니다.");
         for row in &state.manifest.files {
             ensure!(
-                hash_file(&self.checked(&Self::backup_path(&row.path))?)? == row.original_sha256,
+                hash_file(&self.checked(&state.backup_path(&row.path))?)? == row.original_sha256,
                 "백업 파일이 손상되었습니다: {}. 게임 파일은 변경하지 않았습니다",
                 row.path
             );
@@ -377,7 +399,7 @@ impl Engine {
         );
         for (i, row) in state.manifest.files.iter().enumerate() {
             self.copy_verified(
-                &self.checked(&Self::backup_path(&row.path))?,
+                &self.checked(&state.backup_path(&row.path))?,
                 &Self::stage_path(i),
                 &row.original_sha256,
             )?;
@@ -444,26 +466,39 @@ mod tests {
     use crate::package::{self, Guard, PatchFile};
 
     fn fixture() -> (tempfile::TempDir, Vec<u8>) {
+        fixture_for("1.0.5")
+    }
+
+    fn fixture_for(version: &str) -> (tempfile::TempDir, Vec<u8>) {
         let dir = tempfile::tempdir().unwrap();
         fs::create_dir_all(dir.path().join("alicenation_Data")).unwrap();
         let mut manifest = Manifest {
             format: 1,
-            game_version: "1.0.5".into(),
+            game_version: version.into(),
             patch_version: "v1".into(),
             draft: false,
             guards: vec![],
             files: vec![],
         };
+        let guard_data = if version == "1.0.5" {
+            b"version fixture".as_slice()
+        } else {
+            b"version 1.0.6 fixture".as_slice()
+        };
         for path in ["alicenation.exe", "alicenation_Data/globalgamemanagers"] {
-            fs::write(dir.path().join(path), b"version fixture").unwrap();
+            fs::write(dir.path().join(path), guard_data).unwrap();
             manifest.guards.push(Guard {
                 path: path.into(),
-                sha256: package::hash(b"version fixture"),
+                sha256: package::hash(guard_data),
             });
         }
         let mut payload = Vec::new();
         for path in ["GameAssembly.dll", "alicenation_Data/resources.assets"] {
-            let old = b"Original Japanese language resource";
+            let old = if version == "1.0.5" {
+                b"Original Japanese language resource".as_slice()
+            } else {
+                b"Updated Japanese language resource for 1.0.6".as_slice()
+            };
             let new = "한국어 번역 리소스 · 원본 복원 검증".as_bytes();
             fs::write(dir.path().join(path), old).unwrap();
             let mut delta = Vec::new();
@@ -543,7 +578,7 @@ mod tests {
         engine.write_state(&state).unwrap();
         let row = &pkg.manifest.files[0];
         fs::copy(
-            engine.checked(&Engine::backup_path(&row.path)).unwrap(),
+            engine.checked(&state.backup_path(&row.path)).unwrap(),
             dir.path().join(&row.path),
         )
         .unwrap();
@@ -586,7 +621,13 @@ mod tests {
         fs::write(&target, patched).unwrap();
         fs::write(
             engine
-                .checked(&Engine::backup_path("GameAssembly.dll"))
+                .checked(
+                    &engine
+                        .state()
+                        .unwrap()
+                        .unwrap()
+                        .backup_path("GameAssembly.dll"),
+                )
                 .unwrap(),
             b"broken backup",
         )
@@ -659,5 +700,94 @@ mod tests {
         assert!(engine.install(&pkg, false, &mut |_| {}).is_err());
         check_files(dir.path(), &pkg.manifest, false);
         assert!(engine.state().unwrap().is_none());
+    }
+
+    #[test]
+    fn version_set_selects_matching_game_and_preserves_old_backups_after_update() {
+        let (old_game, old_bytes) = fixture_for("1.0.5");
+        let (new_game, new_bytes) = fixture_for("1.0.6");
+        let encoded = package::encode_set(&[&old_bytes, &new_bytes]).unwrap();
+        let set = PackageSet::read(&encoded).unwrap();
+        assert_eq!(
+            set.select(old_game.path()).unwrap().manifest.game_version,
+            "1.0.5"
+        );
+        assert_eq!(
+            set.select(new_game.path()).unwrap().manifest.game_version,
+            "1.0.6"
+        );
+        let engine = Engine::open(old_game.path()).unwrap();
+        engine.install_available(&set, false, &mut |_| {}).unwrap();
+        let old_state = engine.state().unwrap().unwrap();
+        engine.restore(&mut |_| {}).unwrap();
+        // Simulate a game update only after the old patch has been restored.
+        let new_pkg = set.select(new_game.path()).unwrap();
+        for path in new_pkg
+            .manifest
+            .guards
+            .iter()
+            .map(|r| &r.path)
+            .chain(new_pkg.manifest.files.iter().map(|r| &r.path))
+        {
+            fs::copy(new_game.path().join(path), old_game.path().join(path)).unwrap();
+        }
+        engine.install_available(&set, false, &mut |_| {}).unwrap();
+        check_files(old_game.path(), &new_pkg.manifest, true);
+        engine.restore(&mut |_| {}).unwrap();
+        check_files(old_game.path(), &new_pkg.manifest, false);
+        for row in old_state.manifest.files.iter() {
+            assert_eq!(
+                hash_file(&old_game.path().join(old_state.backup_path(&row.path))).unwrap(),
+                row.original_sha256
+            );
+        }
+    }
+
+    #[test]
+    fn original_v1_install_record_remains_restorable() {
+        let (game, bytes) = fixture();
+        let package = Package::read(&bytes).unwrap();
+        let engine = Engine::open(game.path()).unwrap();
+        engine.install(&package, false, &mut |_| {}).unwrap();
+        let modern = engine.state().unwrap().unwrap();
+        let legacy = State {
+            format: 1,
+            ..modern.clone()
+        };
+        for row in &legacy.manifest.files {
+            let from = game.path().join(modern.backup_path(&row.path));
+            let to = game.path().join(legacy.backup_path(&row.path));
+            fs::create_dir_all(to.parent().unwrap()).unwrap();
+            fs::rename(from, to).unwrap();
+        }
+        engine.write_state(&legacy).unwrap();
+        engine.restore(&mut |_| {}).unwrap();
+        check_files(game.path(), &package.manifest, false);
+    }
+
+    #[test]
+    fn version_set_rejects_corruption_duplicate_trailing_and_unknown_game() {
+        let (game, a) = fixture_for("1.0.5");
+        let (_, b) = fixture_for("1.0.6");
+        assert!(package::encode_set(&[&a, &a]).is_err());
+        let bytes = package::encode_set(&[&a, &b]).unwrap();
+        assert!(PackageSet::read(&bytes[..bytes.len() - 1]).is_err());
+        let mut corrupted = bytes.clone();
+        *corrupted.last_mut().unwrap() ^= 1;
+        assert!(PackageSet::read(&corrupted).is_err());
+        let mut trailing = bytes.clone();
+        trailing.push(0);
+        assert!(PackageSet::read(&trailing).is_err());
+        fs::write(
+            game.path().join("alicenation_Data/globalgamemanagers"),
+            b"unsupported update",
+        )
+        .unwrap();
+        let set = PackageSet::read(&bytes).unwrap();
+        let engine = Engine::open(game.path()).unwrap();
+        assert!(engine.install_available(&set, false, &mut |_| {}).is_err());
+        assert!(engine.state().unwrap().is_none());
+        check_files(game.path(), &Package::read(&a).unwrap().manifest, false);
+        assert_eq!(PackageSet::read(&a).unwrap().versions(), "1.0.5");
     }
 }

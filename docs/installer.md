@@ -1,87 +1,80 @@
-# Rust 인스톨러 개발 기록
+# Rust 통합 인스톨러
 
-Windows 게임 1.0.5용 한국어 패치 v1이다. 배포 파일은
-`dist/Alicenation-1.0.5-Korean-v1.zip`이며 Rust 실행 파일, 사용 안내와 라이선스 고지를 포함한다.
-Steam의 현재 1.0.6 설치본에는 이 패치를 적용하지 않는다.
+게임 1.0.5와 1.0.6을 지원하는 한국어 패치 v1, 인스톨러 버전 1.1.0이다.
+`dist/Alicenation-1.0.5-1.0.6-Korean-v1.zip`에 실행 파일·사용 안내·라이선스 고지를 담는다.
+기존 1.0.5 전용 ZIP과 그 안의 실행 파일은 그대로 보존한다.
 
-## 기능
+## 설치와 복구
 
-- 한국어 GUI: 게임 폴더 선택, 패치 적용, 원상 복구, 상태 확인.
-- 원본 실행 파일과 globalgamemanagers 해시로 지원하는 게임 1.0.5를 확인한다.
-- 모든 수정 대상의 SHA-256을 검증한 뒤 원본을 백업한다.
-- BSDIFF40 델타를 적용하고 결과 해시를 검증한다. 완성된 파일만 게임 폴더로 교체한다.
-- 설치·복구 상태를 매번 디스크에 기록하며, 개별 파일은 같은 드라이브에서 원자적으로 교체한다.
-- 설치 도중 실패하면 자동으로 원본 복구를 시도한다. 중단된 작업은 다음 실행에서 복구할 수 있다.
-- 원상 복구에는 패치 패키지가 필요 없다. 게임 안의 설치 기록과 원본 백업을 사용한다.
-- `.alicenation-korean/backup`의 원본을 보존한다. 저장 데이터나 다른 게임 파일을 수정하지 않는다.
-- 다른 게임 버전, 변경된 파일, 손상된 백업, 실행 중인 게임, 동시 인스톨러, 경로 이탈을 차단한다.
-- 관리자 권한을 자동 요구하지 않는다. 쓰기 권한 오류는 화면에 표시한다.
+한국어 GUI에서 게임 폴더를 고르고 패치 적용·원상 복구·상태 확인을 실행한다.
+실행 파일과 globalgamemanagers의 SHA-256으로 버전을 판별한다. 각 버전의 모든 수정
+대상을 다시 검사하고, 백업과 델타 결과를 검증한 뒤 같은 드라이브에서 원자적으로 교체한다.
+설치 도중 실패하면 자동 복구를 시도하며, 중단된 기록은 다음 실행에서 복구할 수 있다.
 
-## 빌드
+통합 인스톨러의 백업 경로는 `.alicenation-korean/backup/<게임 버전>/...`이다.
+설치 기록 형식 2가 이 경로를 사용한다. 기존 v1의 형식 1 기록도 읽으며,
+그 백업은 기존 `.alicenation-korean/backup/...`에서 찾는다.
+복구에는 내장 패치 데이터가 필요 없다. 설치 기록과 검증된 백업만 사용한다.
+통합판으로 설치한 패치는 통합판으로 복구해야 한다.
 
-저장소 루트에서 검증된 1.0.5 원본 사본으로 리소스를 빌드한다.
-`reference`의 추출 자료와 `work/inventory.json`, `work/analysis/objects.json`은 로컬 분석 산출물이다.
-현재 Steam 설치본을 기본 경로로 사용하면 원본 버전/해시 검사에서 거부된다.
+게임 업데이트 전 먼저 복구한다. 업데이트 후 새 버전용 패치를 적용하면 이전 버전의
+백업은 그대로 보존한다. 패치된 상태에서 게임 파일이 업데이트되면 원본 덮어쓰기를
+거부한다. 손상된 백업, 경로 이탈·정션, 실행 중인 게임, 동시 인스톨러도 차단한다.
+저장 데이터는 변경하지 않으며 관리자 권한을 자동 요구하지 않는다.
+
+## 리소스 재빌드
+
+로컬 원본 목록은 `work/inventory.json`(1.0.5), `work/inventory-1.0.6.json`이다.
+일본어 비교 자료는 `reference/localization`, `reference/localization-1.0.6`에 있다.
+공통 리소스 객체 목록은 `work/analysis/objects.json`을 사용한다. 바뀐 폰트 번들은
+각 버전의 원본 목록에서 찾으며, 새 번역은 원문을 고정한 버전별 추가 파일로 관리한다.
 
 ```powershell
-python -X utf8 tools/validate_translations.py --complete
-python -X utf8 tools/build_patch.py --game work/baseline-1.0.5
-python -X utf8 tools/verify_patch.py --game work/baseline-1.0.5
+python -X utf8 tools/validate_translations.py --complete --version 1.0.5
+python -X utf8 tools/validate_translations.py --complete --version 1.0.6
+python -X utf8 tools/build_patch.py --game work/baseline-1.0.6 --output work/patched-1.0.6
+python -X utf8 tools/verify_patch.py --game work/baseline-1.0.6 --patch work/patched-1.0.6
 ```
 
-인스톨러 폴더에서 델타 생성 도구를 빌드한다.
+1.0.5도 같은 명령에서 원본·출력 경로를 지정하여 빌드할 수 있다. 통합 배포에는
+기존 최종 1.0.5 패키지를 바이트 그대로 포함하여 이전 설치와 호환한다.
+
+## Rust 빌드와 패키징
+
+인스톨러 디렉터리에서 실행한다. 출력 `.akp`는 덮어쓰지 않으므로 재생성 시 새 이름을 쓴다.
 
 ```powershell
-cargo build --release --no-default-features --bin pack-payload
-```
-
-`pack-payload <원본 게임 폴더> <패치 폴더> <새 출력 파일.akp>`로 패키지를 만든다.
-완성본에는 `--allow-draft`를 사용하지 않는다.
-기존 출력 패키지는 덮어쓰지 않으므로 새 출력 이름을 지정한다.
-
-```powershell
-target/release/pack-payload.exe ../work/baseline-1.0.5 ../work/patched ../work/alicenation-1.0.5-korean-v1-final.akp
-$env:ALICE_PAYLOAD = (Resolve-Path '../work/alicenation-1.0.5-korean-v1-final.akp').Path
+cargo test --locked
+cargo clippy --locked --all-targets -- -D warnings
+cargo build --locked --release --no-default-features --bin pack-payload --bin pack_versions
+target/release/pack-payload.exe ../work/baseline-1.0.6 ../work/patched-1.0.6 ../work/alicenation-1.0.6-korean-v1.akp
+target/release/pack_versions.exe ../work/alicenation-1.0.5-korean-v1-final.akp ../work/alicenation-1.0.6-korean-v1.akp ../work/alicenation-1.0.5-1.0.6-korean-v1.akp
+$env:ALICE_PAYLOAD = (Resolve-Path '../work/alicenation-1.0.5-1.0.6-korean-v1.akp').Path
 cargo build --locked --release --bin alicenation-korean
 ```
 
-GUI 실행 파일에 델타 패키지와 한국어 글꼴이 포함된다. 별도 런타임 설치는 필요하지 않다.
-패키지 없이 빌드하면 복구 전용 개발 화면이 뜬다. 시험본에서는 미완성 표시와 별도 확인란을 표시한다.
+각 버전은 기존 ALICKO1/BSDIFF40 형식으로 독립 검증한다. ALICKO2는 길이가 명시된
+두 패키지를 보관한다. 중복 버전, 잘린 데이터, 뒤에 붙은 내용, 잘못된 델타 해시를 거부한다.
+코드의 `static` 데이터로 내장하여 불필요한 페이로드 복제를 피한다.
 
-CLI 전용 빌드는 `--no-default-features`를 붙인다.
+저장소 루트에서 `python -X utf8 tools/package_release.py`로 ZIP을 만든다.
+패키저는 실행 파일에 정확한 통합 데이터가 한 번 들어 있고 각 버전의 파일 목록·해시가
+리소스 빌드와 일치하는지 확인한다. 기존 배포 폴더는 덮어쓰지 않는다.
 
 ```text
-alicenation-korean status --game <폴더>
-alicenation-korean patch --game <폴더>
-alicenation-korean restore --game <폴더>
+Alicenation-Korean-v1.exe status --game <폴더>
+Alicenation-Korean-v1.exe patch --game <폴더>
+Alicenation-Korean-v1.exe restore --game <폴더>
 ```
 
-## 검증
+## 검증과 의존성
 
-`cargo test --locked`: 실제 파일 교체와 장애 복구를 포함한 10개 테스트.
-`cargo clippy --all-targets -- -D warnings`: 경고 없이 통과.
-`tools/test_installer.py`: 원본 게임을 복제한 전용 폴더에서 두 차례 설치·복구와 중복 설치 확인.
-복구 후 398개 원본 해시 일치, 관계없는 파일 보존, 원래 Steam 설치 폴더 무변경을 확인했다.
+13개 Rust 테스트에 실패 시 롤백, 잠금, 손상 데이터, 미지원 버전, 버전 자동 선택,
+업데이트 전후 백업 보존, 기존 형식 1 복구를 포함한다.
+`tools/test_installer.py`는 전용 사본에서 두 차례 설치·중복 설치·복구를 수행한다.
+`--game`, `--patch`, `--inventory`, `--report`로 버전을 지정하며 `--embedded`로
+배포 실행 파일의 내장 데이터를 테스트한다. `--legacy-exe`로 이전 인스톨러 복구도 검사한다.
 
-최종 델타 패키지는 59,005,336바이트, 실행 파일은 70,506,496바이트다.
-`static`으로 페이로드를 공유하며 실행 파일 안에 패키지가 정확히 한 번 들어가는지 확인한다.
-
-게임과 GUI를 종료한 뒤 저장소 루트에서 최종 실행 파일의 내장 패키지를 검사하고 배포한다.
-
-```powershell
-python -X utf8 tools/test_installer.py --embedded --exe installer/target/release/alicenation-korean.exe
-python -X utf8 tools/package_release.py
-```
-
-시험 폴더 `work/installer-qa-game`은 1.0.5 원본 전체와 보존 검사용 파일을 준비해야 한다.
-패키저는 기존 배포 폴더를 덮어쓰지 않는다. 재빌드에는 새 `--output` 경로를 지정할 수 있다.
-
-## 구현 참고
-
-[qbsdiff 공식 문서](https://docs.rs/qbsdiff/1.4.4/qbsdiff/)의 BSDIFF40 생성·적용 API를 사용한다.
-패키지 및 백업 경로에 포함된 심볼릭 링크·Windows 정션은 허용하지 않는다.
-인스톨러의 자체 파일 잠금은 [fs2](https://docs.rs/fs2/0.4.3/fs2/)를 사용한다.
-GUI는 eframe/egui 0.33.3, 폴더 선택은 rfd 0.15.4를 사용한다.
-
+GUI는 eframe/egui 0.33.3, 폴더 선택은 rfd 0.15.4, 델타는 qbsdiff 1.4.4를 사용한다.
 배포 ZIP에는 학교안심 그림일기 OFL, GUI 기본 글꼴 고지와 Windows 빌드에 사용한
-Rust 의존성 156개 고지를 포함한다. 원본 출처는 `assets/licenses/upstream/sources.json`에 기록했다.
+Rust 의존성 156개 고지를 포함한다. 출처는 `assets/licenses/upstream/sources.json`에 있다.

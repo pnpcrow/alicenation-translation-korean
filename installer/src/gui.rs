@@ -1,4 +1,4 @@
-use alicenation_korean::{EMBEDDED, engine::Engine, package::Package};
+use alicenation_korean::{EMBEDDED, engine::Engine, package::PackageSet};
 use anyhow::Result;
 use eframe::egui;
 use std::{
@@ -21,6 +21,7 @@ struct App {
     game: String,
     draft: bool,
     package_ok: bool,
+    versions: String,
     allow_draft: bool,
     receiver: Option<Receiver<Message>>,
     log: Vec<String>,
@@ -69,17 +70,18 @@ impl App {
             .map(PathBuf::from)
             .unwrap_or_default()
             .join("Steam/steamapps/common/alicenation");
-        let package = Package::read(EMBEDDED);
+        let package = PackageSet::read(EMBEDDED);
         Self {
-            game: if package.as_ref().is_ok_and(|p| !p.manifest.draft)
+            game: if package.as_ref().is_ok_and(|p| !p.is_draft())
                 && default.join("alicenation.exe").is_file()
             {
                 default.to_string_lossy().into_owned()
             } else {
                 String::new()
             },
-            draft: package.as_ref().is_ok_and(|p| p.manifest.draft),
+            draft: package.as_ref().is_ok_and(|p| p.is_draft()),
             package_ok: package.is_ok(),
+            versions: package.as_ref().map(|p| p.versions()).unwrap_or_default(),
             allow_draft: false,
             receiver: None,
             log: vec![],
@@ -105,7 +107,11 @@ impl App {
                 match action {
                     Action::Status => engine.status(),
                     Action::Patch => {
-                        engine.install(&Package::read(EMBEDDED)?, allow_draft, &mut progress)?;
+                        engine.install_available(
+                            &PackageSet::read(EMBEDDED)?,
+                            allow_draft,
+                            &mut progress,
+                        )?;
                         Ok("한국어 패치를 적용했습니다. 게임을 실행한 뒤 언어 설정에서 한국어를 선택해 주세요.".into())
                     }
                     Action::Restore => {
@@ -165,7 +171,7 @@ impl eframe::App for App {
             )
             .show(ctx, |ui| {
                 ui.heading("앨리스와 피안");
-                ui.label("한국어 패치 v1 · 게임 1.0.5");
+                ui.label(format!("한국어 패치 v1 · 게임 {}", self.versions));
                 ui.small("일본어 기준 번역 / 학교안심 그림일기 글꼴");
                 if self.draft {
                     ui.colored_label(

@@ -48,8 +48,13 @@ fn main() -> Result<()> {
         !draft || args.len() == 4,
         "incomplete text or tutorial graphics; release package refused"
     );
+    let expected = match build.game_version.as_str() {
+        "1.0.5" => 7410,
+        "1.0.6" => 7417,
+        _ => anyhow::bail!("unsupported game version"),
+    };
     ensure!(
-        build.translated + build.missing == build.total && build.total == 7410,
+        build.translated + build.missing == build.total && build.total == expected,
         "translation count mismatch"
     );
     ensure!(

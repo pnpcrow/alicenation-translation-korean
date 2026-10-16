@@ -1,9 +1,15 @@
 use anyhow::{Context, Result, bail, ensure};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
-use std::{collections::HashSet, fs::File, io::Read, path::Path};
+use std::{
+    collections::{HashMap, HashSet},
+    fs::File,
+    io::Read,
+    path::Path,
+};
 
 pub const MAGIC: &[u8; 8] = b"ALICKO1\n";
+const SET_MAGIC: &[u8; 8] = b"ALICKO2\n";
 pub const MAX_FILE: u64 = 1024 * 1024 * 1024;
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
@@ -93,7 +99,7 @@ fn valid_hash(value: &str) -> bool {
 impl Manifest {
     pub fn validate(&self) -> Result<()> {
         ensure!(
-            self.format == 1 && self.game_version == "1.0.5",
+            self.format == 1 && ["1.0.5", "1.0.6"].contains(&self.game_version.as_str()),
             "지원하지 않는 패치 형식 또는 게임 버전"
         );
         ensure!(
@@ -208,5 +214,99 @@ pub fn encode(manifest: &Manifest, data: &[u8]) -> Result<Vec<u8>> {
     if Package::read(&out).is_err() {
         bail!("생성한 패키지가 검증을 통과하지 못했습니다");
     }
+    Ok(out)
+}
+
+/// A version set retains the independently verified v1 payload format.
+/// Legacy single-version payloads are accepted without conversion.
+pub struct PackageSet<'a> {
+    pub packages: Vec<Package<'a>>,
+}
+
+impl<'a> PackageSet<'a> {
+    pub fn read(bytes: &'a [u8]) -> Result<Self> {
+        if bytes.starts_with(MAGIC) {
+            return Ok(Self {
+                packages: vec![Package::read(bytes)?],
+            });
+        }
+        ensure!(
+            bytes.len() >= 16 && bytes.starts_with(SET_MAGIC),
+            "패치 데이터가 없거나 손상되었습니다"
+        );
+        let count = u64::from_le_bytes(bytes[8..16].try_into().unwrap());
+        ensure!((1..=2).contains(&count), "잘못된 게임 버전 목록");
+        let mut cursor = 16;
+        let mut packages = Vec::new();
+        let mut versions = HashSet::new();
+        for _ in 0..count {
+            ensure!(
+                bytes.len() - cursor >= 8,
+                "패치 데이터 길이가 손상되었습니다"
+            );
+            let size = u64::from_le_bytes(bytes[cursor..cursor + 8].try_into().unwrap());
+            cursor += 8;
+            ensure!(
+                size <= 2 * MAX_FILE && size <= (bytes.len() - cursor) as u64,
+                "패치 데이터 길이가 손상되었습니다"
+            );
+            let end = cursor + size as usize;
+            let package = Package::read(&bytes[cursor..end])?;
+            ensure!(
+                versions.insert(package.manifest.game_version.clone()),
+                "중복된 게임 버전"
+            );
+            packages.push(package);
+            cursor = end;
+        }
+        ensure!(
+            cursor == bytes.len(),
+            "패치 데이터 뒤에 알 수 없는 내용이 있습니다"
+        );
+        Ok(Self { packages })
+    }
+
+    pub fn versions(&self) -> String {
+        self.packages
+            .iter()
+            .map(|p| p.manifest.game_version.as_str())
+            .collect::<Vec<_>>()
+            .join(" / ")
+    }
+
+    pub fn is_draft(&self) -> bool {
+        self.packages.iter().any(|p| p.manifest.draft)
+    }
+
+    pub fn select(&self, game: &Path) -> Result<&Package<'a>> {
+        let mut hashes = HashMap::new();
+        let mut matched = None;
+        for package in &self.packages {
+            let mut matches = true;
+            for guard in &package.manifest.guards {
+                if !hashes.contains_key(&guard.path) {
+                    hashes.insert(guard.path.clone(), hash_file(&game.join(&guard.path))?);
+                }
+                matches &= hashes[&guard.path] == guard.sha256;
+            }
+            if matches {
+                ensure!(matched.is_none(), "게임 버전을 명확히 판별할 수 없습니다");
+                matched = Some(package);
+            }
+        }
+        matched.with_context(|| format!("지원하는 게임 원본과 일치하지 않습니다. 지원 버전: {}. 게임 버전과 파일 변경 여부를 확인해 주세요", self.versions()))
+    }
+}
+
+pub fn encode_set(packages: &[&[u8]]) -> Result<Vec<u8>> {
+    ensure!((1..=2).contains(&packages.len()), "잘못된 게임 버전 목록");
+    let mut out = Vec::new();
+    out.extend_from_slice(SET_MAGIC);
+    out.extend_from_slice(&(packages.len() as u64).to_le_bytes());
+    for bytes in packages {
+        out.extend_from_slice(&(bytes.len() as u64).to_le_bytes());
+        out.extend_from_slice(bytes);
+    }
+    PackageSet::read(&out)?;
     Ok(out)
 }

@@ -3,7 +3,7 @@
     windows_subsystem = "windows"
 )]
 
-use alicenation_korean::{EMBEDDED, engine::Engine, package::Package};
+use alicenation_korean::{EMBEDDED, engine::Engine, package::PackageSet};
 use anyhow::{Context, Result, bail};
 use std::path::PathBuf;
 
@@ -43,8 +43,8 @@ fn run() -> Result<()> {
                 .map(std::fs::read)
                 .transpose()?
                 .unwrap_or_else(|| EMBEDDED.to_vec());
-            let package = Package::read(&bytes)?;
-            engine.install(&package, allow_draft, &mut |s| println!("{s}"))?;
+            let packages = PackageSet::read(&bytes)?;
+            engine.install_available(&packages, allow_draft, &mut |s| println!("{s}"))?;
         }
         _ => bail!("명령은 status, patch, restore 중 하나여야 합니다"),
     }
