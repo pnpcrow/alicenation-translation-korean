@@ -1,0 +1,359 @@
+[
+  {
+    "name": "BackBase",
+    "status": "preserved",
+    "reason": "No readable language; retain original artwork, icons and numbers"
+  },
+  {
+    "name": "CardBuff",
+    "status": "preserved",
+    "reason": "No readable language; retain original artwork, icons and numbers"
+  },
+  {
+    "name": "CardMap",
+    "status": "pending",
+    "reason": "Visible text requires Korean localization"
+  },
+  {
+    "name": "ColdDown",
+    "status": "preserved",
+    "reason": "No readable language; retain original artwork, icons and numbers"
+  },
+  {
+    "name": "ColdDown2",
+    "status": "translated",
+    "reason": "Korean lettering visually checked; runtime layout QA pending",
+    "file": "ColdDown2.png",
+    "prompt_file": "prompts/ColdDown2.txt",
+    "tool": "built-in image_gen",
+    "date": "2026-10-17"
+  },
+  {
+    "name": "Devilry",
+    "status": "preserved",
+    "reason": "No readable language; retain original artwork, icons and numbers"
+  },
+  {
+    "name": "Echo",
+    "status": "preserved",
+    "reason": "No readable language; retain original artwork, icons and numbers"
+  },
+  {
+    "name": "Echo2",
+    "status": "translated",
+    "reason": "Korean lettering visually checked; runtime layout QA pending",
+    "file": "Echo2.png",
+    "prompt_file": "prompts/Echo2.txt",
+    "tool": "built-in image_gen",
+    "date": "2026-10-17"
+  },
+  {
+    "name": "Event",
+    "status": "preserved",
+    "reason": "No readable language; retain original artwork, icons and numbers"
+  },
+  {
+    "name": "FCard",
+    "status": "preserved",
+    "reason": "No readable language; retain original artwork, icons and numbers"
+  },
+  {
+    "name": "FCardPlayer",
+    "status": "translated",
+    "reason": "Korean lettering visually checked; runtime layout QA pending",
+    "file": "FCardPlayer.png",
+    "prompt_file": "prompts/FCardPlayer.txt",
+    "tool": "built-in image_gen",
+    "date": "2026-10-17"
+  },
+  {
+    "name": "FCardScore",
+    "status": "translated",
+    "reason": "Korean lettering visually checked; runtime layout QA pending",
+    "file": "FCardScore.png",
+    "prompt_file": "prompts/FCardScore.txt",
+    "tool": "built-in image_gen",
+    "date": "2026-10-17"
+  },
+  {
+    "name": "FirstNextLevel",
+    "status": "preserved",
+    "reason": "No readable language; retain original artwork, icons and numbers"
+  },
+  {
+    "name": "FishMan",
+    "status": "translated",
+    "reason": "Korean lettering visually checked; runtime layout QA pending",
+    "file": "FishMan.png",
+    "prompt_file": "prompts/FishMan.txt",
+    "tool": "built-in image_gen",
+    "date": "2026-10-17"
+  },
+  {
+    "name": "FishMan2",
+    "status": "preserved",
+    "reason": "No readable language; retain original artwork, icons and numbers"
+  },
+  {
+    "name": "FishMan3",
+    "status": "preserved",
+    "reason": "Caption is entirely outside the bottom crop; only artwork, icons and numbers 4/16 are visible"
+  },
+  {
+    "name": "FullCard",
+    "status": "preserved",
+    "reason": "No readable language; retain original artwork, icons and numbers"
+  },
+  {
+    "name": "FullCurrency",
+    "status": "translated",
+    "reason": "Korean lettering visually checked; runtime layout QA pending",
+    "file": "FullCurrency.png",
+    "prompt_file": "prompts/FullCurrency.txt",
+    "tool": "built-in image_gen",
+    "date": "2026-10-17"
+  },
+  {
+    "name": "GetCard",
+    "status": "translated",
+    "reason": "Korean lettering visually checked; runtime layout QA pending",
+    "file": "GetCard.png",
+    "prompt_file": "prompts/GetCard.txt",
+    "tool": "built-in image_gen",
+    "date": "2026-10-17"
+  },
+  {
+    "name": "GetExp",
+    "status": "translated",
+    "reason": "Korean lettering visually checked; runtime layout QA pending",
+    "file": "GetExp.png",
+    "prompt_file": "prompts/GetExp.txt",
+    "tool": "built-in image_gen",
+    "date": "2026-10-17"
+  },
+  {
+    "name": "GetExp2",
+    "status": "translated",
+    "reason": "Korean lettering visually checked; runtime layout QA pending",
+    "file": "GetExp2.png",
+    "prompt_file": "prompts/GetExp2.txt",
+    "tool": "built-in image_gen",
+    "date": "2026-10-17"
+  },
+  {
+    "name": "HelpPointer1",
+    "status": "preserved",
+    "reason": "No readable language; retain original artwork, icons and numbers"
+  },
+  {
+    "name": "HelpPointer3",
+    "status": "preserved",
+    "reason": "No readable language; retain original artwork, icons and numbers"
+  },
+  {
+    "name": "Light",
+    "status": "translated",
+    "reason": "Korean lettering visually checked; runtime layout QA pending",
+    "file": "Light.png",
+    "prompt_file": "prompts/Light.txt",
+    "tool": "built-in image_gen",
+    "date": "2026-10-17"
+  },
+  {
+    "name": "MoneyAndScore",
+    "status": "preserved",
+    "reason": "No readable language; retain original artwork, icons and numbers"
+  },
+  {
+    "name": "NewBaseCard",
+    "status": "preserved",
+    "reason": "No readable language; retain original artwork, icons and numbers"
+  },
+  {
+    "name": "NewTask",
+    "status": "translated",
+    "reason": "Korean lettering visually checked; runtime layout QA pending",
+    "file": "NewTask.png",
+    "prompt_file": "prompts/NewTask.txt",
+    "tool": "built-in image_gen",
+    "date": "2026-10-17"
+  },
+  {
+    "name": "Nightmare",
+    "status": "preserved",
+    "reason": "No readable language; retain original artwork, icons and numbers"
+  },
+  {
+    "name": "OnlyEnd",
+    "status": "translated",
+    "reason": "Korean lettering visually checked; runtime layout QA pending",
+    "file": "OnlyEnd.png",
+    "prompt_file": "prompts/OnlyEnd.txt",
+    "tool": "built-in image_gen",
+    "date": "2026-10-17"
+  },
+  {
+    "name": "PlaceCard",
+    "status": "preserved",
+    "reason": "No readable language; retain original artwork, icons and numbers"
+  },
+  {
+    "name": "Power",
+    "status": "preserved",
+    "reason": "No readable language; retain original artwork, icons and numbers"
+  },
+  {
+    "name": "RCard",
+    "status": "preserved",
+    "reason": "No readable language; retain original artwork, icons and numbers"
+  },
+  {
+    "name": "RestEnd1",
+    "status": "translated",
+    "reason": "Korean lettering visually checked; runtime layout QA pending",
+    "file": "RestEnd1.png",
+    "prompt_file": "prompts/RestEnd1.txt",
+    "tool": "built-in image_gen",
+    "date": "2026-10-17",
+    "review": "Nearest-neighbor enlargement confirms original bottom numbers 2,2,6,7. Initial generated version preserved 6 correctly; rejected later 6-to-2 correction. First prompt's numerical list was mistaken; visual source is authoritative."
+  },
+  {
+    "name": "RestEnd2",
+    "status": "translated",
+    "reason": "Korean lettering visually checked; runtime layout QA pending",
+    "file": "RestEnd2.png",
+    "prompt_file": "prompts/RestEnd2.txt",
+    "tool": "built-in image_gen",
+    "date": "2026-10-17"
+  },
+  {
+    "name": "RestEnd3",
+    "status": "translated",
+    "reason": "Korean lettering visually checked; runtime layout QA pending",
+    "file": "RestEnd3.png",
+    "prompt_file": "prompts/RestEnd3.txt",
+    "tool": "built-in image_gen",
+    "date": "2026-10-17"
+  },
+  {
+    "name": "Reward1",
+    "status": "preserved",
+    "reason": "No readable language; retain original artwork, icons and numbers"
+  },
+  {
+    "name": "Reward2",
+    "status": "translated",
+    "reason": "Korean lettering visually checked; runtime layout QA pending",
+    "file": "Reward2.png",
+    "prompt_file": "prompts/Reward2.txt",
+    "tool": "built-in image_gen",
+    "date": "2026-10-17"
+  },
+  {
+    "name": "RoundEnd",
+    "status": "preserved",
+    "reason": "No readable language; retain original artwork, icons and numbers"
+  },
+  {
+    "name": "SaleCard",
+    "status": "preserved",
+    "reason": "No readable language; retain original artwork, icons and numbers"
+  },
+  {
+    "name": "Scan1",
+    "status": "preserved",
+    "reason": "No readable language; retain original artwork, icons and numbers"
+  },
+  {
+    "name": "Scan2",
+    "status": "translated",
+    "reason": "Korean lettering visually checked; runtime layout QA pending",
+    "file": "Scan2.png",
+    "prompt_file": "prompts/Scan2.txt",
+    "tool": "built-in image_gen",
+    "date": "2026-10-17"
+  },
+  {
+    "name": "Scan3",
+    "status": "translated",
+    "reason": "Korean lettering visually checked; runtime layout QA pending",
+    "file": "Scan3.png",
+    "prompt_file": "prompts/Scan3.txt",
+    "tool": "built-in image_gen",
+    "date": "2026-10-17"
+  },
+  {
+    "name": "Scan4",
+    "status": "translated",
+    "reason": "Korean lettering visually checked; runtime layout QA pending",
+    "file": "Scan4.png",
+    "prompt_file": "prompts/Scan4.txt",
+    "tool": "built-in image_gen",
+    "date": "2026-10-17"
+  },
+  {
+    "name": "Scan5",
+    "status": "preserved",
+    "reason": "No readable language; retain original artwork, icons and numbers"
+  },
+  {
+    "name": "SetHelp",
+    "status": "translated",
+    "reason": "Korean lettering visually checked; runtime layout QA pending",
+    "file": "SetHelp.png",
+    "prompt_file": "prompts/SetHelp.txt",
+    "tool": "built-in image_gen",
+    "date": "2026-10-17"
+  },
+  {
+    "name": "SkillCard",
+    "status": "preserved",
+    "reason": "No readable language; retain original artwork, icons and numbers"
+  },
+  {
+    "name": "TaskBtn",
+    "status": "translated",
+    "reason": "Korean lettering visually checked; runtime layout QA pending",
+    "file": "TaskBtn.png",
+    "prompt_file": "prompts/TaskBtn.txt",
+    "tool": "built-in image_gen",
+    "date": "2026-10-17"
+  },
+  {
+    "name": "TaskHelp",
+    "status": "translated",
+    "reason": "Korean lettering visually checked; runtime layout QA pending",
+    "file": "TaskHelp.png",
+    "prompt_file": "prompts/TaskHelp.txt",
+    "tool": "built-in image_gen",
+    "date": "2026-10-17"
+  },
+  {
+    "name": "TempBag",
+    "status": "preserved",
+    "reason": "No readable language; retain original artwork, icons and numbers"
+  },
+  {
+    "name": "TempBag2",
+    "status": "preserved",
+    "reason": "No readable language; retain original artwork, icons and numbers"
+  },
+  {
+    "name": "UseCard",
+    "status": "translated",
+    "reason": "Korean lettering visually checked; runtime layout QA pending",
+    "file": "UseCard.png",
+    "prompt_file": "prompts/UseCard.txt",
+    "tool": "built-in image_gen",
+    "date": "2026-10-17"
+  },
+  {
+    "name": "UsePlayer",
+    "status": "translated",
+    "reason": "Korean lettering visually checked; runtime layout QA pending",
+    "file": "UsePlayer.png",
+    "prompt_file": "prompts/UsePlayer.txt",
+    "tool": "built-in image_gen",
+    "date": "2026-10-17"
+  }
+]

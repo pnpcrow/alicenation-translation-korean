@@ -14,6 +14,8 @@ from build_patch import ROOT, load_translations
 from extract_localization import parse_table
 from inventory import digest
 from korean_font import DEFAULT_FONT, FONT_ID, TMP_ID, ATLAS_ID, MATERIAL_ID, pptr, is_hangul
+from inventory import DEFAULT_GAME
+import tutorial_atlas
 
 
 def verify_font(objects, nodes, existing_ids):
@@ -43,6 +45,7 @@ def verify_font(objects, nodes, existing_ids):
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--patch", type=Path, default=ROOT / "work/patched")
+    parser.add_argument("--game", type=Path, default=DEFAULT_GAME)
     args = parser.parse_args()
     manifest = json.loads((args.patch / "manifest.json").read_text("utf-8"))
     assert len({r["path"] for r in manifest["files"]}) == len(manifest["files"]), "Duplicate patch paths"
@@ -73,6 +76,8 @@ def main():
         actual = data.image.convert("RGBA")
         expected = Image.open(ROOT / "assets/images" / row["file"]).convert("RGBA").resize(actual.size, Image.Resampling.LANCZOS)
         assert actual.tobytes() == expected.tobytes(), row["file"]
+    tutorial = tutorial_atlas.verify(args.game / tutorial_atlas.bundle_path(), args.patch / tutorial_atlas.bundle_path())
+    assert tutorial == manifest["tutorial"]
     catalog = json.loads((args.patch / "alicenation_Data/StreamingAssets/aa/catalog.json").read_text("utf-8"))
     extra = base64.b64decode(catalog["m_ExtraDataString"])
     entries = base64.b64decode(catalog["m_EntryDataString"])
@@ -91,7 +96,7 @@ def main():
                 assert data["m_BundleSize"] == (args.patch / rel).stat().st_size, rel
                 checked.add(rel)
     assert checked == bundles
-    print(f"Verified {len(manifest['files'])} file hashes, {len(cn)} text records, 2 complete Korean font fallbacks, {len(images)} images, {len(checked)} bundle CRCs")
+    print(f"Verified {len(manifest['files'])} file hashes, {len(cn)} text records, 2 complete Korean font fallbacks, {len(images)} images, 52 tutorial sprite layouts/pixels ({tutorial['translated']} translated), {len(checked)} bundle CRCs")
 
 
 if __name__ == "__main__":

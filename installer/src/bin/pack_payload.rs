@@ -17,7 +17,16 @@ struct Build {
     translated: usize,
     total: usize,
     missing: usize,
+    tutorial: Tutorial,
     files: Vec<BuildFile>,
+}
+
+#[derive(Deserialize)]
+struct Tutorial {
+    total: usize,
+    translated: usize,
+    preserved: usize,
+    pending: usize,
 }
 
 fn main() -> Result<()> {
@@ -34,14 +43,19 @@ fn main() -> Result<()> {
         "output already exists; choose a new package path"
     );
     let build: Build = serde_json::from_slice(&fs::read(patched.join("manifest.json"))?)?;
-    let draft = build.missing != 0;
+    let draft = build.missing != 0 || build.tutorial.pending != 0;
     ensure!(
         !draft || args.len() == 4,
-        "incomplete translations; release package refused"
+        "incomplete text or tutorial graphics; release package refused"
     );
     ensure!(
         build.translated + build.missing == build.total && build.total == 7410,
         "translation count mismatch"
+    );
+    ensure!(
+        build.tutorial.total == 52
+            && build.tutorial.translated + build.tutorial.preserved + build.tutorial.pending == 52,
+        "tutorial coverage count mismatch"
     );
     ensure!(
         build.patch_version == if draft { "v1-draft" } else { "v1" },

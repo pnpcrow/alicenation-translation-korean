@@ -13,6 +13,7 @@ from korean_font import install_font
 from addressables import update_catalog
 from validate_translations import validate
 from dialogue import load_dialogue
+import tutorial_atlas
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -96,11 +97,14 @@ def main():
     if problems:
         raise ValueError("Invalid translations: " + "; ".join(problems))
     missing = [key for key, _ in japanese if key not in translated]
+    tutorial = tutorial_atlas.coverage()
     extra = translated.keys() - dict(japanese).keys()
     if extra:
         raise ValueError(f"Unknown keys: {extra}")
     if missing and not args.draft:
         raise ValueError(f"{len(missing)} untranslated keys; use --draft for local QA only")
+    if tutorial["pending"] and not args.draft:
+        raise ValueError(f"{tutorial['pending']} tutorial images pending; use --draft for local QA only")
     rows = [(key, translated.get(key, value)) for key, value in japanese]
     objects[1485].set_raw_data(build_table(header, rows))
     install_font(objects, template, [objects[1474], objects[1475]], 542)
@@ -159,12 +163,17 @@ def main():
         data = env.file.save(packer="lz4") if isinstance(env.file, UnityPy.files.BundleFile) else env.file.save()
         save(rel, data)
 
+    rel = tutorial_atlas.bundle_path()
+    save(rel, tutorial_atlas.build(current_source(rel)))
+
     rel = "alicenation_Data/StreamingAssets/aa/catalog.json"
     save(rel, update_catalog(source(rel), args.game, args.output, list(records)))
 
     args.output.mkdir(parents=True, exist_ok=True)
-    (args.output / "manifest.json").write_text(json.dumps({"game_version": version, "patch_version": "v1-draft" if missing else "v1",
-        "translated": len(translated), "total": len(japanese), "missing": len(missing), "files": list(records.values())}, ensure_ascii=False, indent=2), "utf-8")
+    (args.output / "manifest.json").write_text(json.dumps({"game_version": version,
+        "patch_version": "v1-draft" if missing or tutorial["pending"] else "v1",
+        "translated": len(translated), "total": len(japanese), "missing": len(missing),
+        "tutorial": tutorial, "files": list(records.values())}, ensure_ascii=False, indent=2), "utf-8")
     print(f"Built {len(records)} patched files in {args.output}")
 
 if __name__ == "__main__":
