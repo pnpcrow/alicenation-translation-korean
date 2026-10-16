@@ -79,6 +79,8 @@ def main():
     parser.add_argument("--patch", type=Path, action="append", help="Repeat for each supported game version")
     parser.add_argument("--payload", type=Path, default=ROOT / "work/alicenation-1.0.5-1.0.6-korean-v1.akp")
     parser.add_argument("--output", type=Path, default=ROOT / "dist/Alicenation-1.0.5-1.0.6-Korean-v1")
+    parser.add_argument("--readme", type=Path, default=ROOT / "docs/release-readme.txt",
+                        help="Instructions matching this distribution's supported game versions")
     args = parser.parse_args()
     patches = args.patch or [ROOT / "work/patched", ROOT / "work/patched-1.0.6"]
     manifests = [json.loads((patch / "manifest.json").read_text("utf-8")) for patch in patches]
@@ -97,7 +99,7 @@ def main():
     exe = args.output / "Alicenation-Korean-v1.exe"
     shutil.copy2(args.exe, exe)
     count = notices(args.output / "licenses")
-    shutil.copy2(ROOT / "docs/release-readme.txt", args.output / "사용안내.txt")
+    shutil.copy2(args.readme, args.output / "사용안내.txt")
     info = {"patch_version": "v1", "game_versions": [{"game_version": m["game_version"],
             "text_entries": m["translated"], "static_labels": m["static_ui"],
             "tutorial": m["tutorial"], "modified_files": len(m["files"])} for m in manifests],

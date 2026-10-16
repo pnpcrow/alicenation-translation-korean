@@ -78,3 +78,27 @@ Alicenation-Korean-v1.exe restore --game <폴더>
 GUI는 eframe/egui 0.33.3, 폴더 선택은 rfd 0.15.4, 델타는 qbsdiff 1.4.4를 사용한다.
 배포 ZIP에는 학교안심 그림일기 OFL, GUI 기본 글꼴 고지와 Windows 빌드에 사용한
 Rust 의존성 156개 고지를 포함한다. 출처는 `assets/licenses/upstream/sources.json`에 있다.
+
+## 공개 릴리즈용 버전별 패키지
+
+공개 릴리즈 `v1-game-1.0.5`, `v1-game-1.0.6`에는 인스톨러 1.1.0과 해당 버전의
+ALICKO1 패키지만 포함한다. 게임 리소스는 앞서 검증한 통합판과 동일하다.
+각 실행 파일의 내장 데이터가 하나의 버전만 지원하므로 다른 버전의 원본에는 적용하지 않는다.
+
+다음은 저장소 루트에서 실행하는 1.0.6용 예시다. 출력 폴더·파일이 없을 때 실행한다.
+1.0.5용은 `work/alicenation-1.0.5-korean-v1-final.akp`, `work/patched`를 사용한다.
+
+```powershell
+$env:ALICE_PAYLOAD = (Resolve-Path 'work/alicenation-1.0.6-korean-v1.akp').Path
+cargo build --manifest-path installer/Cargo.toml --locked --release --bin alicenation-korean
+python -X utf8 tools/version_release_readme.py 1.0.6 work/public-readme-1.0.6.txt
+python -X utf8 tools/package_release.py --patch work/patched-1.0.6 --payload work/alicenation-1.0.6-korean-v1.akp --readme work/public-readme-1.0.6.txt --output dist/releases/Alicenation-1.0.6-Korean-v1
+```
+
+다른 버전용 빌드 전에 실행 파일을 별도 경로에 보관하고 `--exe`로 지정할 수도 있다.
+공개 ZIP의 실행 파일로 `test_installer.py`를 실행해 검증한다. 초기 1.0.5 전용
+인스톨러 복구를 시험할 때는 format 2 설치 기록이 없는 새 게임 사본을 사용한다.
+Windows의 긴 경로 제한을 피하려면 검증 사본 경로를 짧게 잡는다.
+
+공개 ZIP과 릴리즈 설명에는 GPT Astra를 사용한 AI 번역이라는 사실을 명시한다.
+GitHub 릴리즈 설명 원본은 `docs/releases/`에 보관하며 ZIP과 `.sha256`을 첨부한다.
