@@ -1,0 +1,52 @@
+[
+  {
+    "texture_name": "Title_CN",
+    "path_id": 2994417245854802111,
+    "file": "title_ko.png"
+  },
+  {
+    "texture_name": "Help1",
+    "path_id": 6809316976160777272,
+    "file": "help1_ko.png"
+  },
+  {
+    "texture_name": "Help2",
+    "path_id": 5245249531833788958,
+    "file": "help2_ko.png"
+  },
+  {
+    "texture_name": "Help4",
+    "path_id": 3921110650033219581,
+    "file": "help4_ko.png"
+  },
+  {
+    "texture_name": "Help5",
+    "path_id": -7910561593302754624,
+    "file": "help5_ko.png"
+  },
+  {
+    "texture_name": "Help6",
+    "path_id": -8109783440402766455,
+    "file": "help6_ko.png"
+  },
+  {
+    "texture_name": "Help7",
+    "path_id": -3302426280287224918,
+    "file": "help7_ko.png"
+  },
+  {
+    "texture_name": "Help8",
+    "path_id": 4428578998013015550,
+    "file": "help8_ko.png"
+  },
+  {
+    "texture_name": "Help9",
+    "path_id": 5308857579465401191,
+    "file": "help9_ko.png"
+  },
+  {
+    "texture_name": "Help10",
+    "path_id": 343534899686674049,
+    "file": "help10_ko.png"
+  }
+]

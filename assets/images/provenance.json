@@ -4,8 +4,83 @@
     "mode": "text-localization",
     "reference": "Title_JA, path ID 4416297387995255551",
     "date": "2026-10-16",
-    "text": ["앨리스와", "피안"],
+    "text": [
+      "앨리스와",
+      "피안"
+    ],
     "prompt": "Translate Japanese title logo to Korean: first line 앨리스와, second line 피안. Preserve thick dark plum outlines, white-to-pink letter gradients, cream outer stroke, textured pink sticker edge, rabbit ears and four-point sparkles. Accurate Hangul; no Japanese, English, extra words or watermark. Centered square sprite with transparent padding and true transparency.",
-    "status": "Generated; game integration and final visual QA pending"
+    "status": "Displayed and visually checked in v1.0.5 preview on 2026-10-16."
+  },
+  "help1_ko.png": {
+    "tool": "built-in image_gen",
+    "mode": "text-localization",
+    "reference": "Help1, path ID 6809316976160777272",
+    "date": "2026-10-17",
+    "status": "Korean lettering and layout visually reviewed; game integration pending",
+    "prompt": "Edit the exact 1280x720 tutorial screenshot. Preserve all card positions, artwork, faces, UI, icons and numbers. Use compact handwritten Korean lettering. Preserve the archival v0.7.9 label. Replace 三月兔 with 삼월 토끼; 【花】 with 【꽃】; description with 특수한 화폐로 유통되며 은은한 / 향기를 풍긴다. 향기는 몸의 구조가 / 아닌 각자의 경험에 따라 다르다. / (꽃 5송이당 카드 칸 1칸 사용) / 특성: 【화폐】 【선물】. Category 도구/인물 카드. Lower panel 【화폐】 겹쳐 쌓을 수 있다. / 【선물】 당신을 향한 적의를 낮출 수 있다. No remaining Chinese, no layout changes, full-frame 16:9."
+  },
+  "help2_ko.png": {
+    "tool": "built-in image_gen",
+    "mode": "text-localization",
+    "reference": "Help2, path ID 5245249531833788958",
+    "date": "2026-10-17",
+    "prompt_file": "prompts/help2.txt",
+    "status": "Korean lettering and layout visually reviewed; game integration pending"
+  },
+  "help4_ko.png": {
+    "tool": "built-in image_gen",
+    "mode": "text-localization",
+    "reference": "Help4, path ID 3921110650033219581",
+    "date": "2026-10-17",
+    "prompt_file": "prompts/help4.txt",
+    "status": "Korean lettering and layout visually reviewed; game integration pending"
+  },
+  "help5_ko.png": {
+    "tool": "built-in image_gen",
+    "mode": "text-localization",
+    "reference": "Help5, path ID -7910561593302754624",
+    "date": "2026-10-17",
+    "prompt_file": "prompts/help5.txt",
+    "status": "Korean lettering and layout visually reviewed; game integration pending"
+  },
+  "help6_ko.png": {
+    "tool": "built-in image_gen",
+    "mode": "text-localization",
+    "reference": "Help6, path ID -8109783440402766455",
+    "date": "2026-10-17",
+    "prompt_file": "prompts/help6.txt",
+    "status": "Korean lettering and layout visually reviewed; game integration pending"
+  },
+  "help7_ko.png": {
+    "tool": "built-in image_gen",
+    "mode": "text-localization",
+    "reference": "Help7, path ID -3302426280287224918",
+    "date": "2026-10-17",
+    "prompt_file": "prompts/help7.txt",
+    "status": "Korean lettering and layout visually reviewed; game integration pending"
+  },
+  "help8_ko.png": {
+    "tool": "built-in image_gen",
+    "mode": "text-localization",
+    "reference": "Help8, path ID 4428578998013015550",
+    "date": "2026-10-17",
+    "prompt_file": "prompts/help8.txt",
+    "status": "Korean lettering and layout visually reviewed; game integration pending"
+  },
+  "help9_ko.png": {
+    "tool": "built-in image_gen",
+    "mode": "text-localization",
+    "reference": "Help9, path ID 5308857579465401191",
+    "date": "2026-10-17",
+    "prompt_file": "prompts/help9.txt",
+    "status": "Korean lettering and layout visually reviewed; game integration pending"
+  },
+  "help10_ko.png": {
+    "tool": "built-in image_gen",
+    "mode": "text-localization",
+    "reference": "Help10, path ID 343534899686674049",
+    "date": "2026-10-17",
+    "prompt_file": "prompts/help10.txt",
+    "status": "Korean lettering and layout visually reviewed; game integration pending"
   }
 }

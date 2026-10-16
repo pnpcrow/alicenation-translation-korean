@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import json
 import struct
+from collections import defaultdict
 from pathlib import Path
 import UnityPy
 from PIL import Image
@@ -127,16 +128,24 @@ def main():
         raise ValueError(f"Expected two CN language labels, found {changed}")
     save(rel, env.file.save(packer="lz4"))
 
-    target = next(x for x in object_index if x["type"] == "Texture2D" and x.get("name") == "Title_CN")
-    rel = target["source"]
-    env = UnityPy.load(str(source(rel)))
-    obj = next(o for o in env.objects if o.path_id == target["id"])
-    data = obj.read()
-    image = Image.open(ROOT / "assets/images/title_ko.png").convert("RGBA")
-    # Import-time resampling only: composition and lettering remain image_gen output.
-    data.set_image(image.resize((data.m_Width, data.m_Height), Image.Resampling.LANCZOS), target_format=4)
-    data.save()
-    save(rel, env.file.save(packer="lz4"))
+    image_entries = json.loads((ROOT / "assets/images/manifest.json").read_text("utf-8"))
+    image_bundles = defaultdict(list)
+    for entry in image_entries:
+        matches = [x for x in object_index if x["type"] == "Texture2D"
+                   and x["id"] == entry["path_id"] and x.get("name") == entry["texture_name"]]
+        if len(matches) != 1:
+            raise ValueError(f"Ambiguous graphic target: {entry}")
+        image_bundles[matches[0]["source"]].append(entry)
+    for rel, entries in image_bundles.items():
+        env = UnityPy.load(str(source(rel)))
+        for entry in entries:
+            obj = next(o for o in env.objects if o.path_id == entry["path_id"])
+            data = obj.read()
+            image = Image.open(ROOT / "assets/images" / entry["file"]).convert("RGBA")
+            # Import-time resampling only; artwork and lettering remain image_gen output.
+            data.set_image(image.resize((data.m_Width, data.m_Height), Image.Resampling.LANCZOS), target_format=4)
+            data.save()
+        save(rel, env.file.save(packer="lz4"))
 
     rel = "alicenation_Data/StreamingAssets/aa/catalog.json"
     save(rel, update_catalog(source(rel), args.game, args.output, [r["path"] for r in records]))
