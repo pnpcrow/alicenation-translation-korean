@@ -212,25 +212,31 @@ impl Engine {
             "이 패키지는 제작 중인 시험본입니다. 정식 배포본이 아닙니다"
         );
         self.verify_guards(manifest)?;
-        if let Some(state) = self.state()? {
+        let previous = self.state()?;
+        if let Some(state) = &previous {
             match state.phase {
                 Phase::Applying | Phase::Restoring => {
                     bail!("이전 작업이 중단되었습니다. 먼저 원상 복구를 실행해 주세요")
                 }
                 Phase::Installed => {
+                    if state.manifest == *manifest {
+                        for row in &manifest.files {
+                            ensure!(
+                                hash_file(&self.checked(&row.path)?)? == row.patched_sha256,
+                                "설치된 파일이 변경되었습니다: {}",
+                                row.path
+                            );
+                        }
+                        progress("같은 한국어 패치가 이미 설치되어 있습니다.");
+                        return Ok(());
+                    }
                     ensure!(
-                        state.manifest == *manifest,
+                        state.manifest.game_version != manifest.game_version,
                         "다른 패치가 설치되어 있습니다. 먼저 원상 복구를 실행해 주세요"
                     );
-                    for row in &manifest.files {
-                        ensure!(
-                            hash_file(&self.checked(&row.path)?)? == row.patched_sha256,
-                            "설치된 파일이 변경되었습니다: {}",
-                            row.path
-                        );
-                    }
-                    progress("같은 한국어 패치가 이미 설치되어 있습니다.");
-                    return Ok(());
+                    // A Steam update can leave an old installation record. Continue only
+                    // if every target below is the verified new version's original.
+                    progress("이전 버전의 설치 기록이 있습니다. 새 버전 원본을 모두 확인합니다.");
                 }
                 Phase::Restored => (),
             }
@@ -246,7 +252,7 @@ impl Engine {
             ensure!(
                 target.metadata()?.len() == row.original_size
                     && hash_file(&target)? == row.original_sha256,
-                "원본 파일이 일치하지 않습니다: {}. 게임 버전이나 다른 패치 적용 여부를 확인해 주세요",
+                "원본 파일이 일치하지 않습니다: {}. 게임 업데이트 후라면 Steam의 설치된 파일 → 게임 파일 무결성 확인을 실행한 뒤 다시 적용해 주세요",
                 row.path
             );
             let backup = self.checked(&state.backup_path(&row.path))?;
@@ -318,6 +324,25 @@ impl Engine {
                 "준비 중 게임 파일이 변경되었습니다: {}",
                 row.path
             );
+        }
+        if let Some(previous) = &previous
+            && previous.manifest.game_version != manifest.game_version
+        {
+            let bytes = serde_json::to_vec_pretty(previous)?;
+            let relative = format!("{STORE}/history/{}.json", crate::package::hash(&bytes));
+            let archive = self.checked(&relative)?;
+            fs::create_dir_all(archive.parent().unwrap())?;
+            if archive.exists() {
+                ensure!(
+                    fs::read(&archive)? == bytes,
+                    "이전 설치 기록 보관 파일이 손상되었습니다"
+                );
+            } else {
+                let mut temp = tempfile::NamedTempFile::new_in(archive.parent().unwrap())?;
+                temp.write_all(&bytes)?;
+                temp.as_file().sync_all()?;
+                platform::replace(temp.path(), &archive)?;
+            }
         }
         self.write_state(&state)?;
         let commit = (|| -> Result<()> {
@@ -482,6 +507,8 @@ mod tests {
         };
         let guard_data = if version == "1.0.5" {
             b"version fixture".as_slice()
+        } else if version == "1.0.9" {
+            b"version 1.0.9 fixture".as_slice()
         } else {
             b"version 1.0.6 fixture".as_slice()
         };
@@ -496,6 +523,8 @@ mod tests {
         for path in ["GameAssembly.dll", "alicenation_Data/resources.assets"] {
             let old = if version == "1.0.5" {
                 b"Original Japanese language resource".as_slice()
+            } else if version == "1.0.9" {
+                b"Updated Japanese language resource for 1.0.9".as_slice()
             } else {
                 b"Updated Japanese language resource for 1.0.6".as_slice()
             };
@@ -741,6 +770,43 @@ mod tests {
                 row.original_sha256
             );
         }
+    }
+
+    #[test]
+    fn steam_update_after_patch_requires_clean_new_originals_and_archives_record() {
+        let (game, old_bytes) = fixture_for("1.0.6");
+        let (updated, new_bytes) = fixture_for("1.0.9");
+        let old_pkg = Package::read(&old_bytes).unwrap();
+        let new_pkg = Package::read(&new_bytes).unwrap();
+        let engine = Engine::open(game.path()).unwrap();
+        engine.install(&old_pkg, false, &mut |_| {}).unwrap();
+        let previous = engine.state().unwrap().unwrap();
+        let record = fs::read(game.path().join(STATE)).unwrap();
+        // Steam updates the version files but can leave old patched resources.
+        for row in &new_pkg.manifest.guards {
+            fs::copy(updated.path().join(&row.path), game.path().join(&row.path)).unwrap();
+        }
+        assert!(engine.restore(&mut |_| {}).is_err());
+        assert!(engine.install(&new_pkg, false, &mut |_| {}).is_err());
+        check_files(game.path(), &old_pkg.manifest, true);
+        assert_eq!(fs::read(game.path().join(STATE)).unwrap(), record);
+        assert!(!game.path().join(format!("{STORE}/history")).exists());
+        // Simulate Steam's integrity check repairing every new-version original.
+        for row in &new_pkg.manifest.files {
+            fs::copy(updated.path().join(&row.path), game.path().join(&row.path)).unwrap();
+        }
+        engine.install(&new_pkg, false, &mut |_| {}).unwrap();
+        check_files(game.path(), &new_pkg.manifest, true);
+        let history = format!("{STORE}/history/{}.json", package::hash(&record));
+        assert_eq!(fs::read(game.path().join(history)).unwrap(), record);
+        for row in &previous.manifest.files {
+            assert_eq!(
+                hash_file(&game.path().join(previous.backup_path(&row.path))).unwrap(),
+                row.original_sha256
+            );
+        }
+        engine.restore(&mut |_| {}).unwrap();
+        check_files(game.path(), &new_pkg.manifest, false);
     }
 
     #[test]
