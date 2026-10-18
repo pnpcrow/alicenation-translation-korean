@@ -56,7 +56,7 @@ def main():
     version = game_versions.detect(args.game)
     inventory = json.loads(game_versions.inventory_path(version).read_text("utf-8"))
     baseline = {r["path"]: r for r in inventory["files"]}
-    object_index = json.loads((ROOT / "work/analysis/objects.json").read_text("utf-8"))
+    object_index = json.loads(game_versions.object_index_path(version).read_text("utf-8"))
     records = {}
 
     def source(rel):
@@ -141,7 +141,7 @@ def main():
         raise ValueError(f"Expected two CN language labels, found {changed}")
     save(rel, env.file.save(packer="lz4"))
 
-    for rel, entries in static_ui.grouped().items():
+    for rel, entries in static_ui.grouped(version).items():
         save(rel, static_ui.build(current_source(rel), entries))
 
     image_entries = json.loads((ROOT / "assets/images/manifest.json").read_text("utf-8"))

@@ -5,6 +5,7 @@ import struct
 from collections import defaultdict
 from pathlib import Path
 import UnityPy
+import game_versions
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -21,10 +22,10 @@ def entries():
     return rows
 
 
-def grouped():
+def grouped(version="1.0.5"):
     groups = defaultdict(list)
     for row in entries():
-        groups[row["source"]].append(row)
+        groups[game_versions.resolve_bundle(row["source"], version)].append(row)
     return groups
 
 
@@ -47,7 +48,7 @@ def build(path, rows):
 
 def verify(original_root, patched_root):
     count = 0
-    for rel, rows in grouped().items():
+    for rel, rows in grouped(game_versions.detect(original_root)).items():
         original = UnityPy.load(str(original_root / rel))
         patched = UnityPy.load(str(patched_root / rel))
         before = {o.path_id: o for o in original.objects}

@@ -82,7 +82,7 @@ def main():
     verify_font(objects, template.serialized_type.node, [1474, 1475])
     verify_font(font_objects, template.serialized_type.node,
                 [-8044376927816756463, -5279115822797500961, template.path_id])
-    index = json.loads((ROOT / "work/analysis/objects.json").read_text("utf-8"))
+    index = json.loads(game_versions.object_index_path(version).read_text("utf-8"))
     images = json.loads((ROOT / "assets/images/manifest.json").read_text("utf-8"))
     for row in images:
         objrow, = [r for r in index if r["type"] == "Texture2D" and r["id"] == row["path_id"] and r["name"] == row["texture_name"]]

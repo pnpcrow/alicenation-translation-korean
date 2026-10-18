@@ -2,14 +2,17 @@
 from pathlib import Path
 import hashlib
 import json
+import re
 import UnityPy
 
 ROOT = Path(__file__).resolve().parents[1]
-SUPPORTED = ("1.0.5", "1.0.6")
+SUPPORTED = ("1.0.5", "1.0.6", "1.0.9")
 FUNCTION_HASHES = {
     "1.0.5": "03c2448e9e4b1002cf2b1fd9874f0698c17236523ed274844e91b1e8bb7e2dd5",
     "1.0.6": "48b71927697242f4e0cecbb86f0ddd9a7309930ea8a3531092867c7511fe1456",
+    "1.0.9": "449d373593173e7fe6400d9b12f3e7edddb7386b837d391aeb1b36ddef7e62f1",
 }
+FUNCTION_OFFSETS = {"1.0.5": 0x51CA20, "1.0.6": 0x51CA20, "1.0.9": 0x51D3F0}
 
 
 def detect(game):
@@ -32,6 +35,22 @@ def reference_dir(version):
     return ROOT / ("reference/localization" if version == "1.0.5" else f"reference/localization-{version}")
 
 
+def object_index_path(version):
+    return ROOT / ("work/analysis-1.0.9/objects.json" if version == "1.0.9" else "work/analysis/objects.json")
+
+
+def resolve_bundle(relative, version):
+    """Resolve a renamed Addressables bundle, retaining object/text/layout checks."""
+    paths = {r["path"] for r in json.loads(inventory_path(version).read_text("utf-8"))["files"]}
+    if relative in paths:
+        return relative
+    normalize = lambda p: re.sub(r"_[0-9a-f]{32}\.bundle$", ".bundle", p)
+    matches = [p for p in paths if normalize(p) == normalize(relative)]
+    if len(matches) != 1:
+        raise ValueError(f"No unique {version} bundle for {relative}: {matches}")
+    return matches[0]
+
+
 def adapt_translations(base, version):
     if version == "1.0.5":
         return base
@@ -40,8 +59,17 @@ def adapt_translations(base, version):
     changes = json.loads((ROOT / f"translations/versions/{version}.json").read_text("utf-8"))
     ja = json.loads((reference_dir(version) / "JA.json").read_text("utf-8"))
     cn = json.loads((reference_dir(version) / "CN.json").read_text("utf-8"))
-    old_ja = json.loads((reference_dir("1.0.5") / "JA.json").read_text("utf-8"))
-    result = dict(base)
+    parent = changes["base_version"]
+    if parent not in SUPPORTED[:SUPPORTED.index(version)]:
+        raise ValueError(f"Invalid translation base: {parent}")
+    old_ja = json.loads((reference_dir(parent) / "JA.json").read_text("utf-8"))
+    result = dict(adapt_translations(base, parent))
+    expected_removed = old_ja.keys() - ja.keys()
+    expected_added = ja.keys() - old_ja.keys()
+    expected_changed = {k for k in old_ja.keys() & ja.keys() if old_ja[k] != ja[k]}
+    if (set(changes["removed"]) != expected_removed or set(changes["added"]) != expected_added
+            or set(changes.get("changed", {})) != expected_changed):
+        raise ValueError(f"Translation overlay does not match {parent} -> {version} source changes")
     for key in changes["removed"]:
         if key in ja or key not in result:
             raise ValueError(f"Removed key mismatch: {key}")
@@ -52,17 +80,18 @@ def adapt_translations(base, version):
         if not row["ja"] and cn.get(key) != row["cn"]:
             raise ValueError(f"Chinese fallback source changed: {key}")
         result[key] = row["ko"]
-    for key in old_ja.keys() & ja.keys():
-        if old_ja[key] != ja[key]:
-            raise ValueError(f"Existing Japanese text changed: {key}")
+    for key, row in changes.get("changed", {}).items():
+        if old_ja[key] != row["previous_ja"] or ja[key] != row["ja"]:
+            raise ValueError(f"Changed Japanese source mismatch: {key}")
+        result[key] = row["ko"]
     return result
 
 
 def patch_localization_branch(raw, version):
-    # Same method RVA in both IL2CPP builds; RIP-relative data references differ.
-    if hashlib.sha256(raw[0x51CA20:0x51CAD3]).hexdigest() != FUNCTION_HASHES[version]:
+    start = FUNCTION_OFFSETS[version]
+    if hashlib.sha256(raw[start:start + 0xB3]).hexdigest() != FUNCTION_HASHES[version]:
         raise ValueError(f"LocalizationText does not match verified {version} code")
-    offset = 0x51CA79
+    offset = start + 0x59
     if raw[offset:offset + 2] != b"\x75\x4a":
         raise ValueError("LocalizationText CN branch mismatch")
     result = bytearray(raw)
