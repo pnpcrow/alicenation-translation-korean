@@ -1,6 +1,7 @@
 """Extract the game's length-prefixed, aligned localization tables losslessly."""
 from __future__ import annotations
 import collections
+import argparse
 import json
 import re
 import struct
@@ -40,9 +41,13 @@ def build_table(header: bytes, rows: list[tuple[str, str]]) -> bytes:
     return header + struct.pack("<i", len(rows)) + b"".join(write_string(k) + write_string(v) for k, v in rows)
 
 def main() -> None:
-    out = Path("reference/localization")
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--game", type=Path, default=DEFAULT_GAME)
+    parser.add_argument("--output", type=Path, default=Path("reference/localization"))
+    args = parser.parse_args()
+    out = args.output
     out.mkdir(parents=True, exist_ok=True)
-    env = UnityPy.load(str(DEFAULT_GAME / "alicenation_Data/resources.assets"))
+    env = UnityPy.load(str(args.game / "alicenation_Data/resources.assets"))
     langs = {}
     for obj in env.objects:
         if obj.type.name != "MonoBehaviour":

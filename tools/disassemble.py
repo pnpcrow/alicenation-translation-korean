@@ -8,9 +8,11 @@ from inventory import DEFAULT_GAME
 
 parser = argparse.ArgumentParser()
 parser.add_argument("method")
+parser.add_argument("--game", type=Path, default=DEFAULT_GAME)
+parser.add_argument("--metadata", type=Path, default=Path("work/il2cpp/script.json"))
 args = parser.parse_args()
-meta = json.loads(Path("work/il2cpp/script.json").read_text("utf-8"))
-pe = pefile.PE(str(DEFAULT_GAME / "GameAssembly.dll"))
+meta = json.loads(args.metadata.read_text("utf-8"))
+pe = pefile.PE(str(args.game / "GameAssembly.dll"), fast_load=True)
 base = pe.OPTIONAL_HEADER.ImageBase
 addresses = sorted(set(x["Address"] for x in meta["ScriptMethod"]))
 names = {base + x["Address"]: x["Name"] for x in meta["ScriptMethod"]}
