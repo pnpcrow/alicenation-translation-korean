@@ -18,6 +18,7 @@ from inventory import DEFAULT_GAME
 import tutorial_atlas
 import static_ui
 import game_versions
+import title_sprite
 
 
 def verify_font(objects, nodes, existing_ids):
@@ -91,6 +92,8 @@ def main():
         actual = data.image.convert("RGBA")
         expected = Image.open(ROOT / "assets/images" / row["file"]).convert("RGBA").resize(actual.size, Image.Resampling.LANCZOS)
         assert actual.tobytes() == expected.tobytes(), row["file"]
+        if row["path_id"] == title_sprite.TEXTURE_ID:
+            title_sprite.verify(UnityPy.load(str(args.game / objrow["source"])), env)
     tutorial = tutorial_atlas.verify(args.game / tutorial_atlas.bundle_path(), args.patch / tutorial_atlas.bundle_path())
     assert tutorial == manifest["tutorial"]
     static_count = static_ui.verify(args.game, args.patch)

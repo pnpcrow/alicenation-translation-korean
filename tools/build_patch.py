@@ -16,6 +16,7 @@ from dialogue import load_dialogue
 import tutorial_atlas
 import static_ui
 import game_versions
+import title_sprite
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -163,6 +164,8 @@ def main():
             # Import-time resampling only; artwork and lettering remain image_gen output.
             data.set_image(image.resize((data.m_Width, data.m_Height), Image.Resampling.LANCZOS), target_format=4)
             data.save()
+            if entry["path_id"] == title_sprite.TEXTURE_ID:
+                title_sprite.replace_mesh(env)
         data = env.file.save(packer="lz4") if isinstance(env.file, UnityPy.files.BundleFile) else env.file.save()
         save(rel, data)
 
