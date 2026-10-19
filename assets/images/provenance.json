@@ -9,7 +9,7 @@
       "피안"
     ],
     "prompt": "Translate Japanese title logo to Korean: first line 앨리스와, second line 피안. Preserve thick dark plum outlines, white-to-pink letter gradients, cream outer stroke, textured pink sticker edge, rabbit ears and four-point sparkles. Accurate Hangul; no Japanese, English, extra words or watermark. Centered square sprite with transparent padding and true transparency.",
-    "status": "Displayed and visually checked in v1.0.5 preview on 2026-10-16."
+    "status": "Artwork unchanged. On 2026-10-19, game 1.0.10 v1 r2 replaces the old CN sprite silhouette with a full-rectangle mesh. Fullscreen and windowed title screens verified; see docs/title-clipping.md. The earlier texture-only review missed clipping."
   },
   "help1_ko.png": {
     "tool": "built-in image_gen",
