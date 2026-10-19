@@ -1,6 +1,31 @@
 # Rust 인스톨러
 
-## 현재 배포: 게임 1.0.9 / 인스톨러 1.2.0
+## 현재 배포: 게임 1.0.10 / 인스톨러 1.2.1
+
+1.0.10 전용 패치와 7,436개 번역을 담는다. 이변체의 정신 피해 감소 설명 및
+짧아진 대사를 반영하며 새 게임 원본과 실행 코드의 해시를 별도로 검증한다.
+이전 1.0.5·1.0.6·1.0.9 배포 파일은 변경하지 않았다. 설치·복구 엔진의 동작은
+1.2.0과 같으며, 1.0.10 지원과 1.0.9→1.0.10 업데이트 시험을 추가했다.
+
+```powershell
+python -X utf8 tools/validate_translations.py --complete --version 1.0.10
+python -X utf8 tools/build_patch.py --game work/baseline-1.0.10 --output work/patched-1.0.10
+python -X utf8 tools/verify_patch.py --game work/baseline-1.0.10 --patch work/patched-1.0.10
+cargo test --manifest-path installer/Cargo.toml --locked
+cargo clippy --manifest-path installer/Cargo.toml --locked --all-targets -- -D warnings
+cargo build --manifest-path installer/Cargo.toml --locked --release --no-default-features --bin pack-payload
+installer/target/release/pack-payload.exe work/baseline-1.0.10 work/patched-1.0.10 work/alicenation-1.0.10-korean-v1.akp
+$env:ALICE_PAYLOAD = (Resolve-Path 'work/alicenation-1.0.10-korean-v1.akp').Path
+cargo build --manifest-path installer/Cargo.toml --locked --release --bin alicenation-korean
+python -X utf8 tools/version_release_readme.py 1.0.10 work/public-readme-1.0.10.txt
+python -X utf8 tools/package_release.py --patch work/patched-1.0.10 --payload work/alicenation-1.0.10-korean-v1.akp --readme work/public-readme-1.0.10.txt --output dist/releases/Alicenation-1.0.10-Korean-v1
+```
+
+[1.0.10 분석 기록](update-analysis-1.0.10.md)과 `work/analysis-1.0.10/objects.json`을
+사용한다. 출력 파일·폴더가 없을 때 위 명령을 실행한다. 15개 Rust 테스트는
+1.0.9→1.0.10의 원본 확인, 잔존 패치 거부, 이전 기록·백업 보존, 복구를 포함한다.
+
+## 이전 배포: 게임 1.0.9 / 인스톨러 1.2.0
 
 1.0.9 전용 패치 데이터와 7,436개 번역을 포함한다. 이전 1.0.5·1.0.6 공개 배포 파일은
 변경하지 않았다. 1.0.8은 사용자의 최종 요청에 따라 지원 대상에서 제외했다.
