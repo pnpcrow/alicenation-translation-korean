@@ -6,13 +6,14 @@ import re
 import UnityPy
 
 ROOT = Path(__file__).resolve().parents[1]
-SUPPORTED = ("1.0.5", "1.0.6", "1.0.9")
+SUPPORTED = ("1.0.5", "1.0.6", "1.0.9", "1.0.10")
 FUNCTION_HASHES = {
     "1.0.5": "03c2448e9e4b1002cf2b1fd9874f0698c17236523ed274844e91b1e8bb7e2dd5",
     "1.0.6": "48b71927697242f4e0cecbb86f0ddd9a7309930ea8a3531092867c7511fe1456",
     "1.0.9": "449d373593173e7fe6400d9b12f3e7edddb7386b837d391aeb1b36ddef7e62f1",
+    "1.0.10": "cc982d62da5c95cae4debd8e558568eb5ecd79d247342ad70d6a74ec0182fad5",
 }
-FUNCTION_OFFSETS = {"1.0.5": 0x51CA20, "1.0.6": 0x51CA20, "1.0.9": 0x51D3F0}
+FUNCTION_OFFSETS = {"1.0.5": 0x51CA20, "1.0.6": 0x51CA20, "1.0.9": 0x51D3F0, "1.0.10": 0x51D3F0}
 
 
 def detect(game):
@@ -36,7 +37,9 @@ def reference_dir(version):
 
 
 def object_index_path(version):
-    return ROOT / ("work/analysis-1.0.9/objects.json" if version == "1.0.9" else "work/analysis/objects.json")
+    if version not in SUPPORTED:
+        raise ValueError(version)
+    return ROOT / ("work/analysis/objects.json" if version in ("1.0.5", "1.0.6") else f"work/analysis-{version}/objects.json")
 
 
 def resolve_bundle(relative, version):

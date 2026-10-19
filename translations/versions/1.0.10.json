@@ -1,0 +1,18 @@
+{
+  "base_version": "1.0.9",
+  "removed": ["明明大家都是祝福之子，要一起努力让冰封在世界树下的灵魂重新找回肉身喵。"],
+  "added": {
+    "明明大家都是祝福之子，要一起努力喵。": {
+      "ja": "皆、祝福の子なのに。力を合わせにゃ。",
+      "ko": "모두 축복받은 아이들인데. 힘을 합쳐야 해요냥."
+    }
+  },
+  "changed": {
+    "CardBuffInfo_info_ASPEnemy": {
+      "previous_ja": "彼岸の現象に魂を完全に歪められた異形。",
+      "ja": "彼岸の現象から生まれた異形の個体。<b>精神ダメージ</b>を大幅に軽減する。",
+      "ko": "피안의 현상에서 태어난 괴이한 존재. 받는 <b>정신 피해</b>를 크게 줄인다."
+    }
+  },
+  "notes": "Japanese is primary; EN/CN/TC agree on psychic damage reduction and the shortened dialogue. Supervisor in Chapter3_2/script1_1 keeps the established polite cat-like speech. Removed World Tree/soul/body details are not retained in Korean. Source and previous-source pins prevent reuse on unverified builds."
+}
