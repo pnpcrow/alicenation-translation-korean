@@ -52,6 +52,7 @@ fn main() -> Result<()> {
         "1.0.5" => 7410,
         "1.0.6" => 7417,
         "1.0.9" => 7436,
+        "1.0.10" => 7436,
         _ => anyhow::bail!("unsupported game version"),
     };
     ensure!(

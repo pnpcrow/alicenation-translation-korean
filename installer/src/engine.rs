@@ -509,6 +509,8 @@ mod tests {
             b"version fixture".as_slice()
         } else if version == "1.0.9" {
             b"version 1.0.9 fixture".as_slice()
+        } else if version == "1.0.10" {
+            b"version 1.0.10 fixture".as_slice()
         } else {
             b"version 1.0.6 fixture".as_slice()
         };
@@ -525,6 +527,8 @@ mod tests {
                 b"Original Japanese language resource".as_slice()
             } else if version == "1.0.9" {
                 b"Updated Japanese language resource for 1.0.9".as_slice()
+            } else if version == "1.0.10" {
+                b"Updated Japanese language resource for 1.0.10".as_slice()
             } else {
                 b"Updated Japanese language resource for 1.0.6".as_slice()
             };
@@ -772,12 +776,21 @@ mod tests {
         }
     }
 
-    #[test]
-    fn steam_update_after_patch_requires_clean_new_originals_and_archives_record() {
-        let (game, old_bytes) = fixture_for("1.0.6");
-        let (updated, new_bytes) = fixture_for("1.0.9");
+    fn check_steam_update(old_version: &str, new_version: &str) {
+        let (game, old_bytes) = fixture_for(old_version);
+        let (updated, new_bytes) = fixture_for(new_version);
         let old_pkg = Package::read(&old_bytes).unwrap();
         let new_pkg = Package::read(&new_bytes).unwrap();
+        let set_bytes = package::encode_set(&[&old_bytes, &new_bytes]).unwrap();
+        let set = PackageSet::read(&set_bytes).unwrap();
+        assert_eq!(
+            set.select(game.path()).unwrap().manifest.game_version,
+            old_version
+        );
+        assert_eq!(
+            set.select(updated.path()).unwrap().manifest.game_version,
+            new_version
+        );
         let engine = Engine::open(game.path()).unwrap();
         engine.install(&old_pkg, false, &mut |_| {}).unwrap();
         let previous = engine.state().unwrap().unwrap();
@@ -807,6 +820,16 @@ mod tests {
         }
         engine.restore(&mut |_| {}).unwrap();
         check_files(game.path(), &new_pkg.manifest, false);
+    }
+
+    #[test]
+    fn steam_update_after_patch_requires_clean_new_originals_and_archives_record() {
+        check_steam_update("1.0.6", "1.0.9");
+    }
+
+    #[test]
+    fn game_110_upgrade_from_109_preserves_backups_and_restores_correct_version() {
+        check_steam_update("1.0.9", "1.0.10");
     }
 
     #[test]
