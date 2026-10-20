@@ -180,3 +180,22 @@ Windows의 긴 경로 제한을 피하려면 검증 사본 경로를 짧게 잡�
 
 공개 ZIP과 릴리즈 설명에는 GPT Astra를 사용한 AI 번역이라는 사실을 명시한다.
 GitHub 릴리즈 설명 원본은 `docs/releases/`에 보관하며 ZIP과 `.sha256`을 첨부한다.
+
+## 1.0.10 Steam 빌드 26075487
+
+인스톨러 1.2.2는 `1.0.10-b26075487`을 별도 지원 프로필로 추가한다.
+실행 파일과 bundleVersion은 이전 1.0.10과 같지만 globalgamemanagers의 해시가 달라
+정확히 구분할 수 있다. 새 백업은 `backup/1.0.10-b26075487/`에 보관하며 이전
+`backup/1.0.10/`을 덮어쓰지 않는다. 16번째 Rust 테스트는 이 업데이트 경로를 검증한다.
+
+```powershell
+cargo build --manifest-path installer/Cargo.toml --locked --release --no-default-features --bin pack-payload
+installer/target/release/pack-payload.exe work/b26075487 work/p26075487 work/alicenation-b26075487-v1.akp
+$env:ALICE_PAYLOAD = (Resolve-Path 'work/alicenation-b26075487-v1.akp').Path
+cargo build --manifest-path installer/Cargo.toml --locked --release --bin alicenation-korean
+python -X utf8 tools/version_release_readme.py 1.0.10-b26075487 work/readme-26075487.txt
+python -X utf8 tools/package_release.py --patch work/p26075487 --payload work/alicenation-b26075487-v1.akp --readme work/readme-26075487.txt --output dist/releases/Alicenation-1.0.10-b26075487-Korean-v1
+```
+
+출력 경로가 이미 있으면 새 경로를 지정한다. 자세한 원본·번역 변경은
+[빌드 분석 기록](update-26075487.md)을 참고한다.
