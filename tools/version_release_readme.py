@@ -7,7 +7,7 @@ ROOT = Path(__file__).resolve().parents[1]
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('version', choices=('1.0.5', '1.0.6', '1.0.9', '1.0.10'))
+    parser.add_argument('version', choices=('1.0.5', '1.0.6', '1.0.9', '1.0.10', '1.0.10-b26075487'))
     parser.add_argument('output', type=Path)
     parser.add_argument('--revision', choices=('r2',), help='1.0.10 title-sprite correction')
     args = parser.parse_args()
@@ -16,7 +16,7 @@ def main():
         'Windows 1.0.5 / 1.0.6': f'Windows {args.version} 전용',
         '게임 1.0.5와 1.0.6의 검증된 원본에 적용합니다.': f'게임 {args.version}의 검증된 원본에 적용합니다.',
         '일본어 기준 텍스트 7,410항목(1.0.5) / 7,417항목(1.0.6)':
-            f"일본어 기준 텍스트 {dict(zip(('1.0.5', '1.0.6', '1.0.9', '1.0.10'), ('7,410', '7,417', '7,436', '7,436')))[args.version]}항목",
+            f"일본어 기준 텍스트 {dict(zip(('1.0.5', '1.0.6', '1.0.9', '1.0.10', '1.0.10-b26075487'), ('7,410', '7,417', '7,436', '7,436', '7,438')))[args.version]}항목",
         '통합 인스톨러로': '인스톨러 1.1.0으로',
         '통합 인스톨러': '인스톨러 1.1.0',
     }
@@ -25,7 +25,7 @@ def main():
     for old, new in replacements.items():
         assert old in text, f'Instructions template changed: {old}'
         text = text.replace(old, new)
-    if args.version in ('1.0.9', '1.0.10'):
+    if args.version in ('1.0.9', '1.0.10', '1.0.10-b26075487'):
         text = text.replace('인스톨러 1.1.0', '인스톨러 1.2.0')
         text = text.replace('1.0.6의 템플릿', '템플릿')
         text = text.replace('Steam 파일 무결성 검사로 새 버전 원본을 확보하고 기존 백업을 보존한 채 상태를 확인하세요.',
@@ -34,6 +34,17 @@ def main():
             '1.0.8은 검증하지 않았으며 이 배포판의 지원 대상이 아닙니다.')
     if args.version == '1.0.10':
         text = text.replace('인스톨러 1.2.0', '인스톨러 1.2.1')
+    if args.version == '1.0.10-b26075487':
+        text = text.replace('인스톨러 1.2.0', '인스톨러 1.2.2')
+        text = text.replace(args.version, '1.0.10 (Steam 빌드 26075487)')
+        text = text.replace('화면 문구 90개', '화면 문구 106개')
+        text = text.replace('설치\n1.',
+            '이번 업데이트\n'
+            '게임 내 버전 표기는 1.0.10 그대로이며 Steam 빌드 26075487 전용입니다.\n'
+            '변경된 대사와 새 저장 화면을 번역하고 기존 로고 잘림 수정도 포함했습니다.\n'
+            '이전 빌드용 패치를 적용한 상태에서 Steam이 업데이트했다면 먼저 Steam의\n'
+            '게임 파일 무결성을 확인한 뒤 설치하세요. 이전 빌드 백업은 따로 보존됩니다.\n\n'
+            '설치\n1.', 1)
     if args.revision:
         if args.version != '1.0.10':
             parser.error('r2 is only published for game 1.0.10')

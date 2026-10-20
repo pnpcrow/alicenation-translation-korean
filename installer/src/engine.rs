@@ -511,10 +511,18 @@ mod tests {
             b"version 1.0.9 fixture".as_slice()
         } else if version == "1.0.10" {
             b"version 1.0.10 fixture".as_slice()
+        } else if version == "1.0.10-b26075487" {
+            b"version 1.0.10 build 26075487 fixture".as_slice()
         } else {
             b"version 1.0.6 fixture".as_slice()
         };
         for path in ["alicenation.exe", "alicenation_Data/globalgamemanagers"] {
+            // Steam kept the executable and bundleVersion unchanged in this update.
+            let guard_data = if version == "1.0.10-b26075487" && path == "alicenation.exe" {
+                b"version 1.0.10 fixture".as_slice()
+            } else {
+                guard_data
+            };
             fs::write(dir.path().join(path), guard_data).unwrap();
             manifest.guards.push(Guard {
                 path: path.into(),
@@ -529,6 +537,8 @@ mod tests {
                 b"Updated Japanese language resource for 1.0.9".as_slice()
             } else if version == "1.0.10" {
                 b"Updated Japanese language resource for 1.0.10".as_slice()
+            } else if version == "1.0.10-b26075487" {
+                b"Updated Japanese language resource for build 26075487".as_slice()
             } else {
                 b"Updated Japanese language resource for 1.0.6".as_slice()
             };
@@ -830,6 +840,11 @@ mod tests {
     #[test]
     fn game_110_upgrade_from_109_preserves_backups_and_restores_correct_version() {
         check_steam_update("1.0.9", "1.0.10");
+    }
+
+    #[test]
+    fn same_version_steam_build_preserves_separate_backups_and_restores_new_build() {
+        check_steam_update("1.0.10", "1.0.10-b26075487");
     }
 
     #[test]

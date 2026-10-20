@@ -81,7 +81,13 @@ impl App {
             },
             draft: package.as_ref().is_ok_and(|p| p.is_draft()),
             package_ok: package.is_ok(),
-            versions: package.as_ref().map(|p| p.versions()).unwrap_or_default(),
+            versions: package
+                .as_ref()
+                .map(|p| {
+                    p.versions()
+                        .replace("1.0.10-b26075487", "1.0.10 (Steam 빌드 26075487)")
+                })
+                .unwrap_or_default(),
             allow_draft: false,
             receiver: None,
             log: vec![],

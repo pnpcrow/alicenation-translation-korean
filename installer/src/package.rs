@@ -100,7 +100,8 @@ impl Manifest {
     pub fn validate(&self) -> Result<()> {
         ensure!(
             self.format == 1
-                && ["1.0.5", "1.0.6", "1.0.9", "1.0.10"].contains(&self.game_version.as_str()),
+                && ["1.0.5", "1.0.6", "1.0.9", "1.0.10", "1.0.10-b26075487"]
+                    .contains(&self.game_version.as_str()),
             "지원하지 않는 패치 형식 또는 게임 버전"
         );
         ensure!(

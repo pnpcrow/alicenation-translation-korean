@@ -8,6 +8,7 @@ import shutil
 import subprocess
 import struct
 import zipfile
+import static_ui
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -90,7 +91,8 @@ def main():
     assert set(embedded) == {m["game_version"] for m in manifests}
     for manifest in manifests:
         assert manifest["patch_version"] == "v1" and manifest["missing"] == 0
-        assert manifest["tutorial"]["pending"] == 0 and manifest["static_ui"] == 90
+        assert manifest["tutorial"]["pending"] == 0
+        assert manifest["static_ui"] == len(static_ui.entries(manifest["game_version"]))
         packed = embedded[manifest["game_version"]]
         assert not packed["draft"] and packed["patch_version"] == "v1"
         fields = ("path", "original_sha256", "patched_sha256", "size")
