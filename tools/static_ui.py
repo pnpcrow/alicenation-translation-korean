@@ -14,8 +14,10 @@ def serialized_value(value):
     return struct.unpack("<f", struct.pack("<f", value))[0] if isinstance(value, float) else value
 
 
-def entries():
+def entries(version="1.0.5"):
     rows = json.loads((ROOT / "translations/static-ui.json").read_text("utf-8"))
+    if version == "1.0.10-b26075487":
+        rows += json.loads((ROOT / "translations/versions/1.0.10-b26075487-static-ui.json").read_text("utf-8"))
     targets = [(r["source"], r["path_id"]) for r in rows]
     if len(targets) != len(set(targets)):
         raise ValueError("Duplicate static UI target")
@@ -24,7 +26,7 @@ def entries():
 
 def grouped(version="1.0.5"):
     groups = defaultdict(list)
-    for row in entries():
+    for row in entries(version):
         groups[game_versions.resolve_bundle(row["source"], version)].append(row)
     return groups
 

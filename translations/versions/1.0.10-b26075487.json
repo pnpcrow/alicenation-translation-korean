@@ -1,0 +1,20 @@
+{
+  "base_version": "1.0.10",
+  "removed": ["那个很久没见的男人在签字，笔尖划破纸张的声音像骨折。"],
+  "added": {
+    "有人在签字，笔尖划破纸张的声音像骨折。": {
+      "ja": "誰かが署名している。ペン先が紙を引っかく音は、骨が折れる音に似ていた。",
+      "ko": "누군가 서명하고 있다. 펜촉이 종이를 긁는 소리는 뼈가 부러지는 소리 같았다."
+    },
+    "那个【彼岸甘露】看起来……不像是这个世界的东西？": {
+      "ja": "あの【彼岸の甘露】……この世界のものには見えないけど？",
+      "ko": "저 【피안의 감로】……이 세계의 물건 같지는 않은데?"
+    },
+    "也许这就是沙月为什么需要它。": {
+      "ja": "それが、サツキがこれを必要としている理由なのかも。",
+      "ko": "그래서 사츠키가 그걸 필요로 하는 걸지도 몰라."
+    }
+  },
+  "changed": {},
+  "notes": "Steam build 26075487 still reports bundleVersion 1.0.10. Japanese is primary; EN/CN_TC agree. ChapterStory/Story1_2 removes the man's identity; ChapterHelp/Branch3_1_2 adds Alice's two informal bubbles. Keep the established terms 피안의 감로 and 사츠키."
+}

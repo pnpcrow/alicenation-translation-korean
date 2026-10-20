@@ -83,9 +83,9 @@ def main():
         return current
 
     version_env = UnityPy.load(str(source("alicenation_Data/globalgamemanagers")))
-    version = next(o.read_typetree()["bundleVersion"] for o in version_env.objects if o.type.name == "PlayerSettings")
-    if version not in game_versions.SUPPORTED:
-        raise ValueError(f"Unsupported game version: {version}")
+    bundle_version = next(o.read_typetree()["bundleVersion"] for o in version_env.objects if o.type.name == "PlayerSettings")
+    if bundle_version != version.split("-b")[0]:
+        raise ValueError(f"Game build does not match {version}")
     translated = load_translations(version)
     font_rel = next(r["path"] for r in inventory["files"] if "/fonts_assets_all_" in r["path"])
     font_env = UnityPy.load(str(source(font_rel)))
@@ -179,7 +179,7 @@ def main():
     (args.output / "manifest.json").write_text(json.dumps({"game_version": version,
         "patch_version": "v1-draft" if missing or tutorial["pending"] else "v1",
         "translated": len(translated), "total": len(japanese), "missing": len(missing),
-        "tutorial": tutorial, "static_ui": len(static_ui.entries()),
+        "tutorial": tutorial, "static_ui": len(static_ui.entries(version)),
         "files": list(records.values())}, ensure_ascii=False, indent=2), "utf-8")
     print(f"Built {len(records)} patched files in {args.output}")
 
