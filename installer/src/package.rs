@@ -100,8 +100,15 @@ impl Manifest {
     pub fn validate(&self) -> Result<()> {
         ensure!(
             self.format == 1
-                && ["1.0.5", "1.0.6", "1.0.9", "1.0.10", "1.0.10-b26075487"]
-                    .contains(&self.game_version.as_str()),
+                && [
+                    "1.0.5",
+                    "1.0.6",
+                    "1.0.9",
+                    "1.0.10",
+                    "1.0.10-b26075487",
+                    "1.0.10-b26123177"
+                ]
+                .contains(&self.game_version.as_str()),
             "지원하지 않는 패치 형식 또는 게임 버전"
         );
         ensure!(
@@ -148,12 +155,17 @@ impl Manifest {
                 .context("델타 크기 초과")?;
         }
         ensure!(offset <= 2 * MAX_FILE, "패키지 크기 제한 초과");
-        ensure!(self.guards.len() == 2, "버전 검증 파일이 누락되었습니다");
-        let guards: HashSet<_> = self.guards.iter().map(|g| g.path.as_str()).collect();
+        let mut expected_guards =
+            HashSet::from(["alicenation.exe", "alicenation_Data/globalgamemanagers"]);
+        if self.game_version == "1.0.10-b26123177" {
+            expected_guards.insert("alicenation_Data/StreamingAssets/aa/settings.json");
+        }
         ensure!(
-            guards == HashSet::from(["alicenation.exe", "alicenation_Data/globalgamemanagers"]),
-            "잘못된 버전 검증 목록"
+            self.guards.len() == expected_guards.len(),
+            "버전 검증 파일이 누락되었습니다"
         );
+        let guards: HashSet<_> = self.guards.iter().map(|g| g.path.as_str()).collect();
+        ensure!(guards == expected_guards, "잘못된 버전 검증 목록");
         ensure!(
             self.guards.iter().all(|g| valid_hash(&g.sha256)),
             "잘못된 버전 검증 해시"
@@ -282,7 +294,7 @@ impl<'a> PackageSet<'a> {
 
     pub fn select(&self, game: &Path) -> Result<&Package<'a>> {
         let mut hashes = HashMap::new();
-        let mut matched = None;
+        let mut matched: Option<&Package<'a>> = None;
         for package in &self.packages {
             let mut matches = true;
             for guard in &package.manifest.guards {
@@ -292,8 +304,18 @@ impl<'a> PackageSet<'a> {
                 matches &= hashes[&guard.path] == guard.sha256;
             }
             if matches {
-                ensure!(matched.is_none(), "게임 버전을 명확히 판별할 수 없습니다");
-                matched = Some(package);
+                // A content-only build may satisfy a legacy package's two guards too.
+                // Prefer the package with an additional matching content fingerprint.
+                match matched {
+                    Some(previous)
+                        if previous.manifest.guards.len() == package.manifest.guards.len() =>
+                    {
+                        anyhow::bail!("게임 버전을 명확히 판별할 수 없습니다")
+                    }
+                    Some(previous)
+                        if previous.manifest.guards.len() > package.manifest.guards.len() => {}
+                    _ => matched = Some(package),
+                }
             }
         }
         matched.with_context(|| format!("지원하는 게임 원본과 일치하지 않습니다. 지원 버전: {}. 게임 버전과 파일 변경 여부를 확인해 주세요", self.versions()))

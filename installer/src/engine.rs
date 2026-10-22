@@ -511,14 +511,16 @@ mod tests {
             b"version 1.0.9 fixture".as_slice()
         } else if version == "1.0.10" {
             b"version 1.0.10 fixture".as_slice()
-        } else if version == "1.0.10-b26075487" {
+        } else if matches!(version, "1.0.10-b26075487" | "1.0.10-b26123177") {
             b"version 1.0.10 build 26075487 fixture".as_slice()
         } else {
             b"version 1.0.6 fixture".as_slice()
         };
         for path in ["alicenation.exe", "alicenation_Data/globalgamemanagers"] {
             // Steam kept the executable and bundleVersion unchanged in this update.
-            let guard_data = if version == "1.0.10-b26075487" && path == "alicenation.exe" {
+            let guard_data = if matches!(version, "1.0.10-b26075487" | "1.0.10-b26123177")
+                && path == "alicenation.exe"
+            {
                 b"version 1.0.10 fixture".as_slice()
             } else {
                 guard_data
@@ -527,6 +529,20 @@ mod tests {
             manifest.guards.push(Guard {
                 path: path.into(),
                 sha256: package::hash(guard_data),
+            });
+        }
+        let settings_path = "alicenation_Data/StreamingAssets/aa/settings.json";
+        let settings = if version == "1.0.10-b26123177" {
+            b"addressables settings build 26123177".as_slice()
+        } else {
+            b"previous addressables settings".as_slice()
+        };
+        fs::create_dir_all(dir.path().join(settings_path).parent().unwrap()).unwrap();
+        fs::write(dir.path().join(settings_path), settings).unwrap();
+        if version == "1.0.10-b26123177" {
+            manifest.guards.push(Guard {
+                path: settings_path.into(),
+                sha256: package::hash(settings),
             });
         }
         let mut payload = Vec::new();
@@ -539,6 +555,8 @@ mod tests {
                 b"Updated Japanese language resource for 1.0.10".as_slice()
             } else if version == "1.0.10-b26075487" {
                 b"Updated Japanese language resource for build 26075487".as_slice()
+            } else if version == "1.0.10-b26123177" {
+                b"Updated Japanese language resource for build 26123177".as_slice()
             } else {
                 b"Updated Japanese language resource for 1.0.6".as_slice()
             };
@@ -809,9 +827,27 @@ mod tests {
         for row in &new_pkg.manifest.guards {
             fs::copy(updated.path().join(&row.path), game.path().join(&row.path)).unwrap();
         }
+        if new_version == "1.0.10-b26123177" {
+            // This content update kept both legacy guard files, but replaced resources.
+            // The old installed record has only two guards; changed content must still
+            // stop restoration before any file is written.
+            fs::copy(
+                updated.path().join("alicenation_Data/resources.assets"),
+                game.path().join("alicenation_Data/resources.assets"),
+            )
+            .unwrap();
+        }
+        let steam_files: Vec<_> = old_pkg
+            .manifest
+            .files
+            .iter()
+            .map(|row| fs::read(game.path().join(&row.path)).unwrap())
+            .collect();
         assert!(engine.restore(&mut |_| {}).is_err());
         assert!(engine.install(&new_pkg, false, &mut |_| {}).is_err());
-        check_files(game.path(), &old_pkg.manifest, true);
+        for (row, bytes) in old_pkg.manifest.files.iter().zip(steam_files) {
+            assert_eq!(fs::read(game.path().join(&row.path)).unwrap(), bytes);
+        }
         assert_eq!(fs::read(game.path().join(STATE)).unwrap(), record);
         assert!(!game.path().join(format!("{STORE}/history")).exists());
         // Simulate Steam's integrity check repairing every new-version original.
@@ -845,6 +881,45 @@ mod tests {
     #[test]
     fn same_version_steam_build_preserves_separate_backups_and_restores_new_build() {
         check_steam_update("1.0.10", "1.0.10-b26075487");
+    }
+
+    #[test]
+    fn content_only_update_selects_specific_build_and_preserves_legacy_backups() {
+        check_steam_update("1.0.10-b26075487", "1.0.10-b26123177");
+        let (_, old_bytes) = fixture_for("1.0.10-b26075487");
+        let (game, new_bytes) = fixture_for("1.0.10-b26123177");
+        // Selection must also work when the stronger profile appears first.
+        let bytes = package::encode_set(&[&new_bytes, &old_bytes]).unwrap();
+        let set = PackageSet::read(&bytes).unwrap();
+        assert_eq!(
+            set.select(game.path()).unwrap().manifest.game_version,
+            "1.0.10-b26123177"
+        );
+    }
+
+    #[test]
+    fn content_build_requires_settings_guard_and_refuses_changed_settings() {
+        let (game, bytes) = fixture_for("1.0.10-b26123177");
+        let package = Package::read(&bytes).unwrap();
+        let mut incomplete = package.manifest.clone();
+        incomplete.guards.pop();
+        assert!(incomplete.validate().is_err());
+        let mut duplicate = package.manifest.clone();
+        duplicate.guards[2] = duplicate.guards[0].clone();
+        assert!(duplicate.validate().is_err());
+        let engine = Engine::open(game.path()).unwrap();
+        engine.install(&package, false, &mut |_| {}).unwrap();
+        let record = fs::read(game.path().join(STATE)).unwrap();
+        fs::write(
+            game.path()
+                .join("alicenation_Data/StreamingAssets/aa/settings.json"),
+            b"unknown content update",
+        )
+        .unwrap();
+        assert!(engine.restore(&mut |_| {}).is_err());
+        assert!(engine.install(&package, false, &mut |_| {}).is_err());
+        check_files(game.path(), &package.manifest, true);
+        assert_eq!(fs::read(game.path().join(STATE)).unwrap(), record);
     }
 
     #[test]

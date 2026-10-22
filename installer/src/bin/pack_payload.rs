@@ -54,6 +54,7 @@ fn main() -> Result<()> {
         "1.0.9" => 7436,
         "1.0.10" => 7436,
         "1.0.10-b26075487" => 7438,
+        "1.0.10-b26123177" => 7438,
         _ => anyhow::bail!("unsupported game version"),
     };
     ensure!(
@@ -77,7 +78,11 @@ fn main() -> Result<()> {
         guards: Vec::new(),
         files: Vec::new(),
     };
-    for path in ["alicenation.exe", "alicenation_Data/globalgamemanagers"] {
+    let mut guard_paths = vec!["alicenation.exe", "alicenation_Data/globalgamemanagers"];
+    if manifest.game_version == "1.0.10-b26123177" {
+        guard_paths.push("alicenation_Data/StreamingAssets/aa/settings.json");
+    }
+    for path in guard_paths {
         manifest.guards.push(Guard {
             path: path.into(),
             sha256: package::hash_file(&game.join(path))?,
