@@ -169,7 +169,7 @@ def main():
         data = env.file.save(packer="lz4") if isinstance(env.file, UnityPy.files.BundleFile) else env.file.save()
         save(rel, data)
 
-    rel = tutorial_atlas.bundle_path()
+    rel = tutorial_atlas.bundle_path(version)
     save(rel, tutorial_atlas.build(current_source(rel)))
 
     rel = "alicenation_Data/StreamingAssets/aa/catalog.json"

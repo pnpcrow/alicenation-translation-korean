@@ -7,6 +7,7 @@ Schema: https://github.com/SteamTracking/Protobufs/blob/master/steam/content_man
 import argparse
 import hashlib
 import json
+import os
 from pathlib import Path, PurePosixPath
 import shutil
 import struct
@@ -104,6 +105,8 @@ def main():
         raise ValueError('Choose new output and inventory paths outside the game')
     manifest = read_manifest(args.manifest)
     backup = game / '.alicenation-korean/backup'
+    if os.name == 'nt' and not str(backup).startswith('\\\\?\\'):
+        backup = Path('\\\\?\\' + str(backup))
     roots = [game, backup, *[p for p in backup.iterdir() if p.is_dir()]] if backup.exists() else [game]
     selected = []
     for row in manifest['files']:

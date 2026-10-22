@@ -1,0 +1,12 @@
+{
+  "base_version": "1.0.10-b26075487",
+  "removed": ["双方开始时各抽取两张牌，第一张只有自己可见。[br]你可以在最右边看到双方的点数。"],
+  "added": {
+    "双方开始时各抽取两张牌，第一张只有自己可见。[br]你可以在最左边看到双方的点数。": {
+      "ja": "開始時に双方が二枚ずつ引き、一枚目は自分にだけ見えます。[br]双方の点数は一番左で確認できます。",
+      "ko": "시작할 때 양쪽이 두 장씩 뽑으며, 첫 번째 카드는 자신에게만 보입니다.[br]양쪽의 점수는 맨 왼쪽에서 확인할 수 있습니다."
+    }
+  },
+  "changed": {},
+  "notes": "Japanese, English and Traditional Chinese all change the blackjack score location from far right to far left. HelpPointer1 now illustrates the scores on the left; retain that updated, language-free original. CN/TC also remove a typo in CardInfo_info_WingedFig; JA/EN and the existing Korean translation remain accurate."
+}

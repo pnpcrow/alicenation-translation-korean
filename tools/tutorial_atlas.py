@@ -3,6 +3,7 @@ from collections import Counter
 import json
 from pathlib import Path
 import UnityPy
+import game_versions
 from PIL import Image
 from UnityPy.export.SpriteHelper import SpriteSettings
 
@@ -32,8 +33,8 @@ def coverage():
             "preserved": counts["preserved"], "pending": counts["pending"]}
 
 
-def bundle_path():
-    index = json.loads((ROOT / "work/analysis/objects.json").read_text("utf-8"))
+def bundle_path(version="1.0.5"):
+    index = json.loads(game_versions.object_index_path(version).read_text("utf-8"))
     rel, = {r["source"] for r in index if "teachatlas.spriteatlas_" in r["source"]}
     return rel
 

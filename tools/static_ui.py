@@ -16,7 +16,7 @@ def serialized_value(value):
 
 def entries(version="1.0.5"):
     rows = json.loads((ROOT / "translations/static-ui.json").read_text("utf-8"))
-    if version == "1.0.10-b26075487":
+    if version in ("1.0.10-b26075487", "1.0.10-b26123177"):
         rows += json.loads((ROOT / "translations/versions/1.0.10-b26075487-static-ui.json").read_text("utf-8"))
     targets = [(r["source"], r["path_id"]) for r in rows]
     if len(targets) != len(set(targets)):

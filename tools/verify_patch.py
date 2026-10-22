@@ -94,7 +94,7 @@ def main():
         assert actual.tobytes() == expected.tobytes(), row["file"]
         if row["path_id"] == title_sprite.TEXTURE_ID:
             title_sprite.verify(UnityPy.load(str(args.game / objrow["source"])), env)
-    tutorial = tutorial_atlas.verify(args.game / tutorial_atlas.bundle_path(), args.patch / tutorial_atlas.bundle_path())
+    tutorial = tutorial_atlas.verify(args.game / tutorial_atlas.bundle_path(version), args.patch / tutorial_atlas.bundle_path(version))
     assert tutorial == manifest["tutorial"]
     static_count = static_ui.verify(args.game, args.patch)
     assert static_count == manifest["static_ui"]

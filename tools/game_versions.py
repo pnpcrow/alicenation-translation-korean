@@ -6,12 +6,19 @@ import re
 import UnityPy
 
 ROOT = Path(__file__).resolve().parents[1]
-SUPPORTED = ("1.0.5", "1.0.6", "1.0.9", "1.0.10", "1.0.10-b26075487")
+SUPPORTED = ("1.0.5", "1.0.6", "1.0.9", "1.0.10", "1.0.10-b26075487", "1.0.10-b26123177")
 # Steam can publish different content without changing bundleVersion.
 BUILD_IDENTITIES = {
     "1.0.10": {
         "b279c11c1d3a4ff01942a52e4fe56013db0c3a1481b3d588e29dc28b00c30565": "1.0.10",
         "1e40fc19fb6bda399b8f778913c1c5fd2c549ef459f41325fd334ecb99818d05": "1.0.10-b26075487",
+    }
+}
+# Content-only updates can also retain the same globalgamemanagers file.
+CONTENT_BUILD_IDENTITIES = {
+    "1.0.10-b26075487": {
+        "419c934fb56bd1815d8aa65b8825603d0f5c865aa3344402e13aadaee446d99a": "1.0.10-b26075487",
+        "02a720f4e431be900805d95bc0b0ce7970f99f98be3a30b69e8b6bd296b97998": "1.0.10-b26123177",
     }
 }
 FUNCTION_HASHES = {
@@ -20,9 +27,11 @@ FUNCTION_HASHES = {
     "1.0.9": "449d373593173e7fe6400d9b12f3e7edddb7386b837d391aeb1b36ddef7e62f1",
     "1.0.10": "cc982d62da5c95cae4debd8e558568eb5ecd79d247342ad70d6a74ec0182fad5",
     "1.0.10-b26075487": "0dac98c594a2b814aa3bcf3ca595abeaa4454397e8e7d40650c39c4f2d3111a8",
+    "1.0.10-b26123177": "0dac98c594a2b814aa3bcf3ca595abeaa4454397e8e7d40650c39c4f2d3111a8",
 }
 FUNCTION_OFFSETS = {"1.0.5": 0x51CA20, "1.0.6": 0x51CA20, "1.0.9": 0x51D3F0, "1.0.10": 0x51D3F0}
 FUNCTION_OFFSETS["1.0.10-b26075487"] = 0x51CC50
+FUNCTION_OFFSETS["1.0.10-b26123177"] = 0x51CC50
 
 
 def detect(game):
@@ -33,6 +42,11 @@ def detect(game):
         profile = BUILD_IDENTITIES[version].get(fingerprint)
         if profile is None:
             raise ValueError(f"Unverified build for game {version}: {fingerprint}")
+        if profile in CONTENT_BUILD_IDENTITIES:
+            settings = hashlib.sha256((game / "alicenation_Data/StreamingAssets/aa/settings.json").read_bytes()).hexdigest()
+            profile = CONTENT_BUILD_IDENTITIES[profile].get(settings)
+            if profile is None:
+                raise ValueError(f"Unverified content build for game {version}: {settings}")
         return profile
     if version not in SUPPORTED:
         raise ValueError(f"Unsupported game version: {version}")
