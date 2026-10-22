@@ -3,6 +3,7 @@ import json
 from pathlib import Path
 import subprocess
 import argparse
+import os
 from inventory import digest
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -28,6 +29,8 @@ def main():
     patch = json.loads((args.patch / "manifest.json").read_text("utf-8"))
     logs = []
     installed = Path(baseline["game_root"])
+    if os.name == 'nt' and not str(installed).startswith('\\\\?\\'):
+        installed = Path('\\\\?\\' + str(installed.resolve()))
     installed_before = {p.relative_to(installed).as_posix(): digest(p)
                         for p in installed.rglob("*") if p.is_file()}
 

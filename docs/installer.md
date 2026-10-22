@@ -199,3 +199,25 @@ python -X utf8 tools/package_release.py --patch work/p26075487 --payload work/al
 
 출력 경로가 이미 있으면 새 경로를 지정한다. 자세한 원본·번역 변경은
 [빌드 분석 기록](update-26075487.md)을 참고한다.
+
+## 1.0.10 Steam 빌드 26123177
+
+인스톨러 1.2.3은 `1.0.10-b26123177`을 추가한다. 기존 두 검증 파일에
+`alicenation_Data/StreamingAssets/aa/settings.json`을 추가해 실행 파일·버전 파일이
+같은 콘텐츠 업데이트도 구분한다. 새 프로필은 세 파일이 모두 필수이며, 파일별
+원본 해시 검사도 그대로 유지한다. 백업은 `backup/1.0.10-b26123177/`에 보관한다.
+기존 두 검증 파일을 사용하는 설치 기록도 계속 읽고 복구할 수 있다.
+
+```powershell
+cargo build --manifest-path installer/Cargo.toml --locked --release --no-default-features --bin pack-payload
+installer/target/release/pack-payload.exe work/b26123177 work/p26123177 work/alicenation-b26123177-v1.akp
+$env:ALICE_PAYLOAD = (Resolve-Path 'work/alicenation-b26123177-v1.akp').Path
+cargo build --manifest-path installer/Cargo.toml --locked --release --bin alicenation-korean
+python -X utf8 tools/version_release_readme.py 1.0.10-b26123177 work/readme-26123177.txt
+python -X utf8 tools/package_release.py --patch work/p26123177 --payload work/alicenation-b26123177-v1.akp --readme work/readme-26123177.txt --output dist/releases/Alicenation-1.0.10-b26123177-Korean-v1
+```
+
+18개 Rust 테스트에는 콘텐츠 업데이트 선택 순서, 추가 검증 파일 누락·중복,
+설정 파일 변경 후 설치·복구 거부, 이전 형식 백업 보존을 포함한다.
+원본 구성·E2E 도구는 Windows 확장 경로로 긴 빌드별 백업 경로를 읽는다.
+분석·리소스 빌드 명령은 [이번 빌드 기록](update-26123177.md)을 참고한다.
