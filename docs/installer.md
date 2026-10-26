@@ -221,3 +221,24 @@ python -X utf8 tools/package_release.py --patch work/p26123177 --payload work/al
 설정 파일 변경 후 설치·복구 거부, 이전 형식 백업 보존을 포함한다.
 원본 구성·E2E 도구는 Windows 확장 경로로 긴 빌드별 백업 경로를 읽는다.
 분석·리소스 빌드 명령은 [이번 빌드 기록](update-26123177.md)을 참고한다.
+
+## 1.0.11 Steam 빌드 26208729
+
+인스톨러 1.2.4는 게임 1.0.11과 저장 슬롯의 장 번호 번역을 지원한다.
+이 버전에만 `alicenation_Data/il2cpp_data/Metadata/global-metadata.dat` 패치를
+허용하며, 다른 패치 파일과 동일하게 원본·패치·백업 해시를 검사하고 복구한다.
+실행 파일·globalgamemanagers·Addressables settings.json의 세 검증 파일을 사용한다.
+백업은 `backup/1.0.11/`에 보관하며 이전 설치 기록·백업도 보존한다.
+
+```powershell
+cargo build --manifest-path installer/Cargo.toml --locked --release --no-default-features --bin pack-payload
+installer/target/release/pack-payload.exe work/b26208729 work/p26208729 work/alicenation-1.0.11-v1.akp
+$env:ALICE_PAYLOAD = (Resolve-Path 'work/alicenation-1.0.11-v1.akp').Path
+cargo build --manifest-path installer/Cargo.toml --locked --release --bin alicenation-korean
+python -X utf8 tools/version_release_readme.py 1.0.11 work/readme-26208729.txt
+python -X utf8 tools/package_release.py --patch work/p26208729 --payload work/alicenation-1.0.11-v1.akp --readme work/readme-26208729.txt --output dist/releases/Alicenation-1.0.11-Korean-v1
+```
+
+20개 Rust 테스트에는 1.0.10 최신 빌드에서 1.0.11로 업데이트할 때 백업 보존과
+metadata 복구, 임의로 수정된 metadata의 복구 거부를 포함한다.
+번역·그래픽·실행 코드 변경은 [분석 기록](update-26208729.md)을 참고한다.
