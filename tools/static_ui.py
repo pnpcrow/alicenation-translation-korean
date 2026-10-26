@@ -16,8 +16,22 @@ def serialized_value(value):
 
 def entries(version="1.0.5"):
     rows = json.loads((ROOT / "translations/static-ui.json").read_text("utf-8"))
-    if version in ("1.0.10-b26075487", "1.0.10-b26123177"):
+    if version in ("1.0.10-b26075487", "1.0.10-b26123177", "1.0.11"):
         rows += json.loads((ROOT / "translations/versions/1.0.10-b26075487-static-ui.json").read_text("utf-8"))
+    if version == "1.0.11":
+        positions = {(r["source"], r["path_id"]): i for i, r in enumerate(rows)}
+        updates = json.loads((ROOT / "translations/versions/1.0.11-static-ui.json").read_text("utf-8"))
+        for update in updates:
+            row = dict(update)
+            previous = row.pop("previous_original", None)
+            target = (row["source"], row["path_id"])
+            if previous is not None:
+                index = positions[target]
+                if rows[index]["original"] != previous:
+                    raise ValueError(f"Static UI overlay source changed: {target}")
+                rows[index] = row
+            else:
+                rows.append(row)
     targets = [(r["source"], r["path_id"]) for r in rows]
     if len(targets) != len(set(targets)):
         raise ValueError("Duplicate static UI target")

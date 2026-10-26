@@ -17,6 +17,7 @@ import tutorial_atlas
 import static_ui
 import game_versions
 import title_sprite
+import runtime_text
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -125,6 +126,8 @@ def main():
     rel = "GameAssembly.dll"
     binary = game_versions.patch_localization_branch(source(rel).read_bytes(), version)
     save(rel, binary)
+    if version == "1.0.11":
+        save(runtime_text.PATH, runtime_text.patch(source(runtime_text.PATH).read_bytes()))
 
     # Language buttons are serialized text rather than localization table values.
     rel = next(x["source"] for x in object_index if x["id"] == 2505756016587389373)

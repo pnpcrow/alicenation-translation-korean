@@ -19,6 +19,7 @@ import tutorial_atlas
 import static_ui
 import game_versions
 import title_sprite
+import runtime_text
 
 
 def verify_font(objects, nodes, existing_ids):
@@ -61,6 +62,9 @@ def main():
         assert digest(args.game / row["path"]) == row["original_sha256"], row["path"]
     assert (args.patch / "GameAssembly.dll").read_bytes() == game_versions.patch_localization_branch(
         (args.game / "GameAssembly.dll").read_bytes(), version)
+    if version == "1.0.11":
+        runtime_text.verify((args.game / runtime_text.PATH).read_bytes(),
+                            (args.patch / runtime_text.PATH).read_bytes())
     env = UnityPy.load(str(args.patch / "alicenation_Data/resources.assets"))
     objects = {o.path_id: o for o in env.objects}
     _, cn = parse_table(objects[1485].get_raw_data())
