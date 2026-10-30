@@ -104,6 +104,7 @@ def main():
     shutil.copy2(args.readme, args.output / "사용안내.txt")
     info = {"patch_version": "v1", "game_versions": [{"game_version": m["game_version"],
             "text_entries": m["translated"], "static_labels": m["static_ui"],
+            "runtime_aliases": m.get("runtime_aliases", 0),
             "tutorial": m["tutorial"], "modified_files": len(m["files"])} for m in manifests],
             "payload_sha256": sha(args.payload),
             "installer_sha256": sha(exe), "dependency_notices": count}

@@ -87,6 +87,7 @@ impl App {
                     p.versions()
                         .replace("1.0.10-b26075487", "1.0.10 (Steam 빌드 26075487)")
                         .replace("1.0.10-b26123177", "1.0.10 (Steam 빌드 26123177)")
+                        .replace("1.0.11-b26301409", "1.0.11 (Steam 빌드 26301409)")
                 })
                 .unwrap_or_default(),
             allow_draft: false,

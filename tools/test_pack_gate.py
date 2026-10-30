@@ -23,6 +23,17 @@ def main():
         wrong["tutorial"].update(total=53, preserved=29, pending=0)
         wrong["patch_version"] = "v1"
         cases.append(("invalid coverage", wrong, "tutorial coverage count mismatch"))
+        # The new story key is absent from all original language tables, so a
+        # complete 7,500-row translation table alone must not pass the release gate.
+        for count in (None, 0, 2):
+            incomplete = copy.deepcopy(baseline)
+            incomplete.update(game_version="1.0.11-b26301409", translated=7500, total=7500,
+                              patch_version="v1", tutorial={"total":52, "translated":25, "preserved":27, "pending":0})
+            if count is not None:
+                incomplete["runtime_aliases"] = count
+            else:
+                incomplete.pop("runtime_aliases", None)
+            cases.append((f"runtime alias count {count}", incomplete, "runtime alias coverage mismatch"))
         for name, manifest, message in cases:
             (folder / "manifest.json").write_text(json.dumps(manifest), "utf-8")
             output = folder / "refused.akp"

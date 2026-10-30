@@ -17,6 +17,8 @@ struct Build {
     translated: usize,
     total: usize,
     missing: usize,
+    #[serde(default)]
+    runtime_aliases: usize,
     tutorial: Tutorial,
     files: Vec<BuildFile>,
 }
@@ -55,12 +57,16 @@ fn main() -> Result<()> {
         "1.0.10" => 7436,
         "1.0.10-b26075487" => 7438,
         "1.0.10-b26123177" => 7438,
-        "1.0.11" => 7500,
+        "1.0.11" | "1.0.11-b26301409" => 7500,
         _ => anyhow::bail!("unsupported game version"),
     };
     ensure!(
         build.translated + build.missing == build.total && build.total == expected,
         "translation count mismatch"
+    );
+    ensure!(
+        build.runtime_aliases == usize::from(build.game_version == "1.0.11-b26301409"),
+        "runtime alias coverage mismatch"
     );
     ensure!(
         build.tutorial.total == 52
@@ -82,7 +88,7 @@ fn main() -> Result<()> {
     let mut guard_paths = vec!["alicenation.exe", "alicenation_Data/globalgamemanagers"];
     if matches!(
         manifest.game_version.as_str(),
-        "1.0.10-b26123177" | "1.0.11"
+        "1.0.10-b26123177" | "1.0.11" | "1.0.11-b26301409"
     ) {
         guard_paths.push("alicenation_Data/StreamingAssets/aa/settings.json");
     }
