@@ -1,0 +1,19 @@
+{
+  "base_version": "1.0.11",
+  "removed": [],
+  "added": {},
+  "changed": {},
+  "runtime_aliases": [
+    {
+      "key": "啊、我马上就过去你在那里等着！单脚跳？不行，过两年再说吧！",
+      "target": "啊、我马上就过去你在那里等着！单脚跳？不行，过两年再说吧了！",
+      "ja": "あっ、今すぐ行くからそこで待ってて！　片足で跳ぶ？　駄目、あと二年たってからにして！",
+      "object_id": 1514,
+      "script": "ChapterStory",
+      "block": "Story2_2",
+      "line": 83,
+      "command": "print",
+      "prefix": "char:RDoctor "
+    }
+  ]
+}

@@ -16,9 +16,9 @@ def serialized_value(value):
 
 def entries(version="1.0.5"):
     rows = json.loads((ROOT / "translations/static-ui.json").read_text("utf-8"))
-    if version in ("1.0.10-b26075487", "1.0.10-b26123177", "1.0.11"):
+    if version in ("1.0.10-b26075487", "1.0.10-b26123177", "1.0.11", "1.0.11-b26301409"):
         rows += json.loads((ROOT / "translations/versions/1.0.10-b26075487-static-ui.json").read_text("utf-8"))
-    if version == "1.0.11":
+    if version in ("1.0.11", "1.0.11-b26301409"):
         positions = {(r["source"], r["path_id"]): i for i, r in enumerate(rows)}
         updates = json.loads((ROOT / "translations/versions/1.0.11-static-ui.json").read_text("utf-8"))
         for update in updates:

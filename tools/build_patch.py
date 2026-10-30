@@ -18,6 +18,7 @@ import static_ui
 import game_versions
 import title_sprite
 import runtime_text
+import runtime_aliases
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -111,11 +112,14 @@ def main():
     if tutorial["pending"] and not args.draft:
         raise ValueError(f"{tutorial['pending']} tutorial images pending; use --draft for local QA only")
     rows = [(key, translated.get(key, value)) for key, value in japanese]
+    aliases = runtime_aliases.resolve(version, translated)
+    runtime_aliases.verify_sources(objects, version)
+    rows.extend(aliases.items())
     objects[1485].set_raw_data(build_table(header, rows))
     install_font(objects, template, [objects[1474], objects[1475]], 542)
     enable_korean_word_wrapping(objects)
     save(rel, env.file.save())
-    print(f"Text: {len(translated)}/{len(japanese)}", flush=True)
+    print(f"Text: {len(translated)}/{len(japanese)}; runtime aliases: {len(aliases)}", flush=True)
 
     install_font(font_objects, template,
                  [font_objects[-8044376927816756463], font_objects[-5279115822797500961], template],
@@ -126,7 +130,7 @@ def main():
     rel = "GameAssembly.dll"
     binary = game_versions.patch_localization_branch(source(rel).read_bytes(), version)
     save(rel, binary)
-    if version == "1.0.11":
+    if version in ("1.0.11", "1.0.11-b26301409"):
         save(runtime_text.PATH, runtime_text.patch(source(runtime_text.PATH).read_bytes()))
 
     # Language buttons are serialized text rather than localization table values.
@@ -182,6 +186,7 @@ def main():
     (args.output / "manifest.json").write_text(json.dumps({"game_version": version,
         "patch_version": "v1-draft" if missing or tutorial["pending"] else "v1",
         "translated": len(translated), "total": len(japanese), "missing": len(missing),
+        "runtime_aliases": len(aliases),
         "tutorial": tutorial, "static_ui": len(static_ui.entries(version)),
         "files": list(records.values())}, ensure_ascii=False, indent=2), "utf-8")
     print(f"Built {len(records)} patched files in {args.output}")

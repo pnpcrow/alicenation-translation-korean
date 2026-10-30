@@ -47,17 +47,19 @@ def validate(ja, translated):
 def main():
     from build_patch import load_translations
     import game_versions
+    import runtime_aliases
     parser = argparse.ArgumentParser()
     parser.add_argument("--complete", action="store_true")
     parser.add_argument("--version", choices=game_versions.SUPPORTED, default="1.0.5")
     args = parser.parse_args()
     ja = json.loads((game_versions.reference_dir(args.version) / "JA.json").read_text("utf-8"))
     translated = load_translations(args.version)
+    aliases = runtime_aliases.resolve(args.version, translated)
     problems = validate(ja, translated)
     missing = sorted(ja.keys() - translated.keys())
     if args.complete and missing:
         problems.append(f"Untranslated: {len(missing)}")
-    print(json.dumps({"translated": len(translated), "total": len(ja), "missing": len(missing), "problems": problems}, ensure_ascii=False, indent=2))
+    print(json.dumps({"translated": len(translated), "total": len(ja), "runtime_aliases": len(aliases), "missing": len(missing), "problems": problems}, ensure_ascii=False, indent=2))
     if problems:
         raise SystemExit(1)
 

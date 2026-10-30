@@ -20,6 +20,7 @@ import static_ui
 import game_versions
 import title_sprite
 import runtime_text
+import runtime_aliases
 
 
 def verify_font(objects, nodes, existing_ids):
@@ -62,7 +63,7 @@ def main():
         assert digest(args.game / row["path"]) == row["original_sha256"], row["path"]
     assert (args.patch / "GameAssembly.dll").read_bytes() == game_versions.patch_localization_branch(
         (args.game / "GameAssembly.dll").read_bytes(), version)
-    if version == "1.0.11":
+    if version in ("1.0.11", "1.0.11-b26301409"):
         runtime_text.verify((args.game / runtime_text.PATH).read_bytes(),
                             (args.patch / runtime_text.PATH).read_bytes())
     env = UnityPy.load(str(args.patch / "alicenation_Data/resources.assets"))
@@ -70,10 +71,15 @@ def main():
     _, cn = parse_table(objects[1485].get_raw_data())
     _, ja = parse_table(objects[1488].get_raw_data())
     translated = load_translations(version)
-    assert cn == [(key, translated.get(key, value)) for key, value in ja]
+    aliases = runtime_aliases.resolve(version, translated)
+    assert cn == [(key, translated.get(key, value)) for key, value in ja] + list(aliases.items())
+    assert len(dict(cn)) == len(cn)
+    assert manifest.get("runtime_aliases", 0) == len(aliases)
     assert len(translated) == manifest["translated"]
     original_resources = UnityPy.load(str(args.game / "alicenation_Data/resources.assets"))
     original_objects = {o.path_id: o for o in original_resources.objects}
+    runtime_aliases.verify_sources(original_objects, version)
+    runtime_aliases.verify_sources(objects, version)
     # Preserve updated gameplay configuration, all scripts and comparison languages.
     for oid in [1477, 1479, 1480, 1486, 1487, 1488, *range(1498, 1515)]:
         assert original_objects[oid].get_raw_data() == objects[oid].get_raw_data(), oid
