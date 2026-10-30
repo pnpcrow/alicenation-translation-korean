@@ -242,3 +242,19 @@ python -X utf8 tools/package_release.py --patch work/p26208729 --payload work/al
 20개 Rust 테스트에는 1.0.10 최신 빌드에서 1.0.11로 업데이트할 때 백업 보존과
 metadata 복구, 임의로 수정된 metadata의 복구 거부를 포함한다.
 번역·그래픽·실행 코드 변경은 [분석 기록](update-26208729.md)을 참고한다.
+
+## 1.0.11 Steam 빌드 26301409
+
+인스톨러 1.2.5는 동일한 실행 파일과 globalgamemanagers를 사용하는 이전 1.0.11과
+settings.json 해시로 구분한다. 프로필·백업 폴더 이름은 `1.0.11-b26301409`다.
+21개 Rust 테스트에서 새 빌드 선택, 업데이트와 이전 백업 보존·복구를 검증한다.
+일본어 번역 7,500항목에 더해, 번역표에서 빠진 이야기 키 연결 1개가 있어야
+패키징을 허용한다. 관련 변경은 [분석 기록](update-26301409.md)에 있다.
+
+```powershell
+cargo build --manifest-path installer/Cargo.toml --locked --release --no-default-features --bin pack-payload
+installer/target/release/pack-payload.exe work/b26301409 work/p26301409 work/alicenation-1.0.11-b26301409-v1.akp
+$env:ALICE_PAYLOAD = (Resolve-Path 'work/alicenation-1.0.11-b26301409-v1.akp').Path
+cargo build --manifest-path installer/Cargo.toml --locked --release --bin alicenation-korean
+python -X utf8 tools/package_release.py --patch work/p26301409 --payload work/alicenation-1.0.11-b26301409-v1.akp --readme docs/release-readme-1.0.11-b26301409.txt --output dist/releases/Alicenation-1.0.11-b26301409-Korean-v1
+```
