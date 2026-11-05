@@ -258,3 +258,18 @@ $env:ALICE_PAYLOAD = (Resolve-Path 'work/alicenation-1.0.11-b26301409-v1.akp').P
 cargo build --manifest-path installer/Cargo.toml --locked --release --bin alicenation-korean
 python -X utf8 tools/package_release.py --patch work/p26301409 --payload work/alicenation-1.0.11-b26301409-v1.akp --readme docs/release-readme-1.0.11-b26301409.txt --output dist/releases/Alicenation-1.0.11-b26301409-Korean-v1
 ```
+
+## 1.0.12 Steam 빌드 26437071
+
+인스톨러 1.2.6은 1.0.12의 버전 정보와 패치 원본 해시를 검사하며 새 백업은
+`backup/1.0.12/`에 보관한다. 22개 Rust 테스트에 1.0.11 최신 빌드에서의 업데이트,
+이전 백업 보존, 원상 복구와 복수 패키지의 정확한 버전 선택이 포함된다.
+원본 폰트 번들 교체와 5장 진행 조건 변경은 [분석 기록](update-26437071.md)에 있다.
+
+```powershell
+cargo build --manifest-path installer/Cargo.toml --locked --release --no-default-features --bin pack-payload
+installer/target/release/pack-payload.exe work/b26437071 work/p26437071 work/alicenation-1.0.12-v1.akp
+$env:ALICE_PAYLOAD = (Resolve-Path 'work/alicenation-1.0.12-v1.akp').Path
+cargo build --manifest-path installer/Cargo.toml --locked --release --bin alicenation-korean
+python -X utf8 tools/package_release.py --patch work/p26437071 --payload work/alicenation-1.0.12-v1.akp --readme docs/release-readme-1.0.12.txt --output dist/releases/Alicenation-1.0.12-Korean-v1
+```
