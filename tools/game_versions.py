@@ -6,9 +6,12 @@ import re
 import UnityPy
 
 ROOT = Path(__file__).resolve().parents[1]
-SUPPORTED = ("1.0.5", "1.0.6", "1.0.9", "1.0.10", "1.0.10-b26075487", "1.0.10-b26123177", "1.0.11", "1.0.11-b26301409")
+SUPPORTED = ("1.0.5", "1.0.6", "1.0.9", "1.0.10", "1.0.10-b26075487", "1.0.10-b26123177", "1.0.11", "1.0.11-b26301409", "1.0.12")
 # Steam can publish different content without changing bundleVersion.
 BUILD_IDENTITIES = {
+    "1.0.12": {
+        "e78613432bb284aac56b66ef0014846f1188924a1788cdf13f2ca335235c1b40": "1.0.12",
+    },
     "1.0.10": {
         "b279c11c1d3a4ff01942a52e4fe56013db0c3a1481b3d588e29dc28b00c30565": "1.0.10",
         "1e40fc19fb6bda399b8f778913c1c5fd2c549ef459f41325fd334ecb99818d05": "1.0.10-b26075487",
@@ -29,6 +32,7 @@ CONTENT_BUILD_IDENTITIES = {
     }
 }
 FUNCTION_HASHES = {
+    "1.0.12": "271d081e7ed71d2a1069889c33fc715c42efc1c911c2912fd71946e450fe44ad",
     "1.0.5": "03c2448e9e4b1002cf2b1fd9874f0698c17236523ed274844e91b1e8bb7e2dd5",
     "1.0.6": "48b71927697242f4e0cecbb86f0ddd9a7309930ea8a3531092867c7511fe1456",
     "1.0.9": "449d373593173e7fe6400d9b12f3e7edddb7386b837d391aeb1b36ddef7e62f1",
@@ -43,6 +47,7 @@ FUNCTION_OFFSETS["1.0.10-b26075487"] = 0x51CC50
 FUNCTION_OFFSETS["1.0.10-b26123177"] = 0x51CC50
 FUNCTION_OFFSETS["1.0.11"] = 0x51CC50
 FUNCTION_OFFSETS["1.0.11-b26301409"] = 0x51CC50
+FUNCTION_OFFSETS["1.0.12"] = 0x51CC50
 
 
 def detect(game):

@@ -47,6 +47,29 @@ def verify_font(objects, nodes, existing_ids):
     assert set(range(0xAC00, 0xD7A4)) <= ft.getBestCmap().keys()
 
 
+def verify_original_font_assets(originals, patched, nodes, existing_ids):
+    """Keep updated non-Korean glyph caches and all original atlas textures."""
+    assert originals.keys() <= patched.keys()
+    for oid, original in originals.items():
+        if oid in existing_ids:
+            expected = original.read_typetree(nodes=nodes)
+            expected["m_FallbackFontAssetTable"].insert(0, pptr(TMP_ID))
+            expected["m_CharacterTable"] = [c for c in expected["m_CharacterTable"]
+                                             if not is_hangul(c["m_Unicode"])]
+            assert expected == patched[oid].read_typetree(nodes=nodes), oid
+        elif original.type.name == "Font":
+            before = original.read_typetree()
+            after = patched[oid].read_typetree()
+            old_font = TTFont(io.BytesIO(bytes(before.pop("m_FontData"))))
+            new_font = TTFont(io.BytesIO(bytes(after.pop("m_FontData"))))
+            assert before == after, oid
+            expected_cmap = {cp: glyph for cp, glyph in old_font.getBestCmap().items()
+                             if not is_hangul(cp)}
+            assert new_font.getBestCmap() == expected_cmap, oid
+        else:
+            assert original.get_raw_data() == patched[oid].get_raw_data(), oid
+
+
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--patch", type=Path, default=ROOT / "work/patched")
@@ -63,7 +86,7 @@ def main():
         assert digest(args.game / row["path"]) == row["original_sha256"], row["path"]
     assert (args.patch / "GameAssembly.dll").read_bytes() == game_versions.patch_localization_branch(
         (args.game / "GameAssembly.dll").read_bytes(), version)
-    if version in ("1.0.11", "1.0.11-b26301409"):
+    if version in ("1.0.11", "1.0.11-b26301409", "1.0.12"):
         runtime_text.verify((args.game / runtime_text.PATH).read_bytes(),
                             (args.patch / runtime_text.PATH).read_bytes())
     env = UnityPy.load(str(args.patch / "alicenation_Data/resources.assets"))
@@ -93,6 +116,9 @@ def main():
     verify_font(objects, template.serialized_type.node, [1474, 1475])
     verify_font(font_objects, template.serialized_type.node,
                 [-8044376927816756463, -5279115822797500961, template.path_id])
+    original_fonts = {o.path_id: o for o in UnityPy.load(str(args.game / font_rel)).objects}
+    verify_original_font_assets(original_fonts, font_objects, template.serialized_type.node,
+                                [-8044376927816756463, -5279115822797500961, template.path_id])
     index = json.loads(game_versions.object_index_path(version).read_text("utf-8"))
     images = json.loads((ROOT / "assets/images/manifest.json").read_text("utf-8"))
     for row in images:
