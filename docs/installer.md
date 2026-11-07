@@ -273,3 +273,22 @@ $env:ALICE_PAYLOAD = (Resolve-Path 'work/alicenation-1.0.12-v1.akp').Path
 cargo build --manifest-path installer/Cargo.toml --locked --release --bin alicenation-korean
 python -X utf8 tools/package_release.py --patch work/p26437071 --payload work/alicenation-1.0.12-v1.akp --readme docs/release-readme-1.0.12.txt --output dist/releases/Alicenation-1.0.12-Korean-v1
 ```
+
+## 1.0.12 Steam 빌드 26489605
+
+인스톨러 1.2.7은 실행 파일과 globalgamemanagers가 같은 이전 1.0.12를
+settings.json 해시와 전체 패치 원본 해시로 구분한다. 프로필·백업 폴더 이름은
+`1.0.12-b26489605`다. 23개 Rust 테스트에는 두 1.0.12 빌드의 선택 순서,
+업데이트와 이전 백업 보존·복구를 포함한다. GUI에도 정확한 Steam 빌드를 표시한다.
+
+공식 번역표가 의사 대사 키를 수정했으므로 새 패키지는 번역 7,500개와 임시 대사
+키 연결 0개를 요구한다. 이전 빌드의 대사 키 연결 요구는 그대로 유지한다.
+변경 내용은 [분석 기록](update-26489605.md)에 있다.
+
+```powershell
+cargo build --manifest-path installer/Cargo.toml --locked --release --no-default-features --bin pack-payload
+installer/target/release/pack-payload.exe work/b26489605 work/p26489605 work/alicenation-1.0.12-b26489605-v1.akp
+$env:ALICE_PAYLOAD = (Resolve-Path 'work/alicenation-1.0.12-b26489605-v1.akp').Path
+cargo build --manifest-path installer/Cargo.toml --locked --release --bin alicenation-korean
+python -X utf8 tools/package_release.py --patch work/p26489605 --payload work/alicenation-1.0.12-b26489605-v1.akp --readme docs/release-readme-1.0.12-b26489605.txt --output dist/releases/Alicenation-1.0.12-b26489605-Korean-v1
+```

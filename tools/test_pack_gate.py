@@ -34,6 +34,15 @@ def main():
             else:
                 incomplete.pop("runtime_aliases", None)
             cases.append((f"{version} runtime alias count {count}", incomplete, "runtime alias coverage mismatch"))
+        # Build 26489605 includes the corrected key in the canonical table.
+        # Carrying forward the old alias would double-count that dialogue.
+        for count in (1, 2):
+            duplicate = copy.deepcopy(baseline)
+            duplicate.update(game_version="1.0.12-b26489605", translated=7500, total=7500,
+                             runtime_aliases=count, patch_version="v1",
+                             tutorial={"total":52, "translated":25, "preserved":27, "pending":0})
+            cases.append((f"canonical dialogue with {count} redundant aliases", duplicate,
+                          "runtime alias coverage mismatch"))
         for name, manifest, message in cases:
             (folder / "manifest.json").write_text(json.dumps(manifest), "utf-8")
             output = folder / "refused.akp"
