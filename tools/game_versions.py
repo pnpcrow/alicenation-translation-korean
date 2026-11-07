@@ -6,7 +6,7 @@ import re
 import UnityPy
 
 ROOT = Path(__file__).resolve().parents[1]
-SUPPORTED = ("1.0.5", "1.0.6", "1.0.9", "1.0.10", "1.0.10-b26075487", "1.0.10-b26123177", "1.0.11", "1.0.11-b26301409", "1.0.12")
+SUPPORTED = ("1.0.5", "1.0.6", "1.0.9", "1.0.10", "1.0.10-b26075487", "1.0.10-b26123177", "1.0.11", "1.0.11-b26301409", "1.0.12", "1.0.12-b26489605")
 # Steam can publish different content without changing bundleVersion.
 BUILD_IDENTITIES = {
     "1.0.12": {
@@ -22,6 +22,10 @@ BUILD_IDENTITIES = {
 }
 # Content-only updates can also retain the same globalgamemanagers file.
 CONTENT_BUILD_IDENTITIES = {
+    "1.0.12": {
+        "419c934fb56bd1815d8aa65b8825603d0f5c865aa3344402e13aadaee446d99a": "1.0.12",
+        "02a720f4e431be900805d95bc0b0ce7970f99f98be3a30b69e8b6bd296b97998": "1.0.12-b26489605",
+    },
     "1.0.11": {
         "02a720f4e431be900805d95bc0b0ce7970f99f98be3a30b69e8b6bd296b97998": "1.0.11",
         "419c934fb56bd1815d8aa65b8825603d0f5c865aa3344402e13aadaee446d99a": "1.0.11-b26301409",
@@ -32,6 +36,7 @@ CONTENT_BUILD_IDENTITIES = {
     }
 }
 FUNCTION_HASHES = {
+    "1.0.12-b26489605": "271d081e7ed71d2a1069889c33fc715c42efc1c911c2912fd71946e450fe44ad",
     "1.0.12": "271d081e7ed71d2a1069889c33fc715c42efc1c911c2912fd71946e450fe44ad",
     "1.0.5": "03c2448e9e4b1002cf2b1fd9874f0698c17236523ed274844e91b1e8bb7e2dd5",
     "1.0.6": "48b71927697242f4e0cecbb86f0ddd9a7309930ea8a3531092867c7511fe1456",
@@ -48,6 +53,7 @@ FUNCTION_OFFSETS["1.0.10-b26123177"] = 0x51CC50
 FUNCTION_OFFSETS["1.0.11"] = 0x51CC50
 FUNCTION_OFFSETS["1.0.11-b26301409"] = 0x51CC50
 FUNCTION_OFFSETS["1.0.12"] = 0x51CC50
+FUNCTION_OFFSETS["1.0.12-b26489605"] = 0x51CC50
 
 
 def detect(game):

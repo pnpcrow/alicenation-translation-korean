@@ -86,7 +86,7 @@ def main():
         assert digest(args.game / row["path"]) == row["original_sha256"], row["path"]
     assert (args.patch / "GameAssembly.dll").read_bytes() == game_versions.patch_localization_branch(
         (args.game / "GameAssembly.dll").read_bytes(), version)
-    if version in ("1.0.11", "1.0.11-b26301409", "1.0.12"):
+    if version in ("1.0.11", "1.0.11-b26301409", "1.0.12", "1.0.12-b26489605"):
         runtime_text.verify((args.game / runtime_text.PATH).read_bytes(),
                             (args.patch / runtime_text.PATH).read_bytes())
     env = UnityPy.load(str(args.patch / "alicenation_Data/resources.assets"))

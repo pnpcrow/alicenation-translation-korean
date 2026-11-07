@@ -130,7 +130,7 @@ def main():
     rel = "GameAssembly.dll"
     binary = game_versions.patch_localization_branch(source(rel).read_bytes(), version)
     save(rel, binary)
-    if version in ("1.0.11", "1.0.11-b26301409", "1.0.12"):
+    if version in ("1.0.11", "1.0.11-b26301409", "1.0.12", "1.0.12-b26489605"):
         save(runtime_text.PATH, runtime_text.patch(source(runtime_text.PATH).read_bytes()))
 
     # Language buttons are serialized text rather than localization table values.
