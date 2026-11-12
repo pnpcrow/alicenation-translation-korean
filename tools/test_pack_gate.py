@@ -43,6 +43,16 @@ def main():
                              tutorial={"total":52, "translated":25, "preserved":27, "pending":0})
             cases.append((f"canonical dialogue with {count} redundant aliases", duplicate,
                           "runtime alias coverage mismatch"))
+        for count in (1, 2):
+            duplicate = copy.deepcopy(baseline)
+            duplicate.update(game_version="1.1.0", translated=7501, total=7501,
+                             runtime_aliases=count, patch_version="v1",
+                             tutorial={"total":52, "translated":25, "preserved":27, "pending":0})
+            cases.append((f"1.1.0 with {count} redundant aliases", duplicate,
+                          "runtime alias coverage mismatch"))
+        missing_eyes = copy.deepcopy(duplicate)
+        missing_eyes.update(translated=7500, total=7500, runtime_aliases=0)
+        cases.append(("1.1.0 missing new eyes label", missing_eyes, "translation count mismatch"))
         for name, manifest, message in cases:
             (folder / "manifest.json").write_text(json.dumps(manifest), "utf-8")
             output = folder / "refused.akp"

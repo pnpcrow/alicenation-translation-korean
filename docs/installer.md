@@ -292,3 +292,20 @@ $env:ALICE_PAYLOAD = (Resolve-Path 'work/alicenation-1.0.12-b26489605-v1.akp').P
 cargo build --manifest-path installer/Cargo.toml --locked --release --bin alicenation-korean
 python -X utf8 tools/package_release.py --patch work/p26489605 --payload work/alicenation-1.0.12-b26489605-v1.akp --readme docs/release-readme-1.0.12-b26489605.txt --output dist/releases/Alicenation-1.0.12-b26489605-Korean-v1
 ```
+
+## 1.1.0 Steam 빌드 26613101
+
+인스톨러 1.2.8은 게임 1.1.0과 새 코드·metadata를 지원한다. 실행 파일,
+globalgamemanagers, Addressables settings.json의 세 검증 파일 및 패치 대상
+전체 원본 해시를 확인한다. 새 백업은 `backup/1.1.0/`에 보관한다.
+24개 Rust 테스트에 이전 1.0.12 빌드에서의 업데이트, 이전 백업 보존·복구와
+복수 패키지의 선택 순서를 포함한다. 새 항목까지 번역 7,501개가 있어야 패키징한다.
+리소스 번호·코드·metadata 위치 변경은 [분석 기록](update-26613101.md)에 있다.
+
+```powershell
+cargo build --manifest-path installer/Cargo.toml --locked --release --no-default-features --bin pack-payload
+installer/target/release/pack-payload.exe work/b26613101 work/p26613101 work/alicenation-1.1.0-v1.akp
+$env:ALICE_PAYLOAD = (Resolve-Path 'work/alicenation-1.1.0-v1.akp').Path
+cargo build --manifest-path installer/Cargo.toml --locked --release --bin alicenation-korean
+python -X utf8 tools/package_release.py --patch work/p26613101 --payload work/alicenation-1.1.0-v1.akp --readme docs/release-readme-1.1.0.txt --output dist/releases/Alicenation-1.1.0-Korean-v1
+```

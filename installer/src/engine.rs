@@ -511,6 +511,8 @@ mod tests {
             b"version 1.0.9 fixture".as_slice()
         } else if version == "1.0.10" {
             b"version 1.0.10 fixture".as_slice()
+        } else if version == "1.1.0" {
+            b"version 1.1.0 fixture".as_slice()
         } else if matches!(version, "1.0.12" | "1.0.12-b26489605") {
             b"version 1.0.12 fixture".as_slice()
         } else if matches!(version, "1.0.11" | "1.0.11-b26301409") {
@@ -530,6 +532,7 @@ mod tests {
                     | "1.0.11-b26301409"
                     | "1.0.12"
                     | "1.0.12-b26489605"
+                    | "1.1.0"
             ) && path == "alicenation.exe"
             {
                 b"version 1.0.10 fixture".as_slice()
@@ -552,7 +555,12 @@ mod tests {
         fs::write(dir.path().join(settings_path), settings).unwrap();
         if matches!(
             version,
-            "1.0.10-b26123177" | "1.0.11" | "1.0.11-b26301409" | "1.0.12" | "1.0.12-b26489605"
+            "1.0.10-b26123177"
+                | "1.0.11"
+                | "1.0.11-b26301409"
+                | "1.0.12"
+                | "1.0.12-b26489605"
+                | "1.1.0"
         ) {
             manifest.guards.push(Guard {
                 path: settings_path.into(),
@@ -563,7 +571,7 @@ mod tests {
         let mut files = vec!["GameAssembly.dll", "alicenation_Data/resources.assets"];
         if matches!(
             version,
-            "1.0.11" | "1.0.11-b26301409" | "1.0.12" | "1.0.12-b26489605"
+            "1.0.11" | "1.0.11-b26301409" | "1.0.12" | "1.0.12-b26489605" | "1.1.0"
         ) {
             files.push("alicenation_Data/il2cpp_data/Metadata/global-metadata.dat");
         }
@@ -578,6 +586,8 @@ mod tests {
                 b"Updated Japanese language resource for build 26075487".as_slice()
             } else if version == "1.0.10-b26123177" {
                 b"Updated Japanese language resource for build 26123177".as_slice()
+            } else if version == "1.1.0" {
+                b"Updated 1.1.0 code, resources and metadata".as_slice()
             } else if version == "1.0.12-b26489605" && path == "alicenation_Data/resources.assets" {
                 b"Corrected telescope dialogue for build 26489605".as_slice()
             } else if version == "1.0.12" && path == "alicenation_Data/resources.assets" {
@@ -952,6 +962,43 @@ mod tests {
             assert_eq!(
                 set.select(new_game.path()).unwrap().manifest.game_version,
                 "1.0.11-b26301409"
+            );
+        }
+    }
+
+    #[test]
+    fn game_110_upgrade_preserves_backups_and_selects_new_metadata() {
+        check_steam_update("1.0.12-b26489605", "1.1.0");
+        let (old_game, old_bytes) = fixture_for("1.0.12-b26489605");
+        let (new_game, new_bytes) = fixture_for("1.1.0");
+        // Steam retained the executable but rebuilt resources, code and metadata.
+        assert_eq!(
+            fs::read(old_game.path().join("alicenation.exe")).unwrap(),
+            fs::read(new_game.path().join("alicenation.exe")).unwrap()
+        );
+        for path in [
+            "alicenation_Data/globalgamemanagers",
+            "GameAssembly.dll",
+            "alicenation_Data/il2cpp_data/Metadata/global-metadata.dat",
+        ] {
+            assert_ne!(
+                fs::read(old_game.path().join(path)).unwrap(),
+                fs::read(new_game.path().join(path)).unwrap()
+            );
+        }
+        for ordered in [
+            [old_bytes.as_slice(), new_bytes.as_slice()],
+            [new_bytes.as_slice(), old_bytes.as_slice()],
+        ] {
+            let bytes = package::encode_set(&ordered).unwrap();
+            let set = PackageSet::read(&bytes).unwrap();
+            assert_eq!(
+                set.select(old_game.path()).unwrap().manifest.game_version,
+                "1.0.12-b26489605"
+            );
+            assert_eq!(
+                set.select(new_game.path()).unwrap().manifest.game_version,
+                "1.1.0"
             );
         }
     }

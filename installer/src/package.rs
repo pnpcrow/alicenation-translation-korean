@@ -110,7 +110,8 @@ impl Manifest {
                     "1.0.11",
                     "1.0.11-b26301409",
                     "1.0.12",
-                    "1.0.12-b26489605"
+                    "1.0.12-b26489605",
+                    "1.1.0"
                 ]
                 .contains(&self.game_version.as_str()),
             "지원하지 않는 패치 형식 또는 게임 버전"
@@ -130,7 +131,7 @@ impl Manifest {
             let allowed = row.path == "GameAssembly.dll"
                 || (matches!(
                     self.game_version.as_str(),
-                    "1.0.11" | "1.0.11-b26301409" | "1.0.12" | "1.0.12-b26489605"
+                    "1.0.11" | "1.0.11-b26301409" | "1.0.12" | "1.0.12-b26489605" | "1.1.0"
                 ) && row.path == "alicenation_Data/il2cpp_data/Metadata/global-metadata.dat")
                 || row.path == "alicenation_Data/resources.assets"
                 || row.path == "alicenation_Data/StreamingAssets/aa/catalog.json"
@@ -167,7 +168,12 @@ impl Manifest {
             HashSet::from(["alicenation.exe", "alicenation_Data/globalgamemanagers"]);
         if matches!(
             self.game_version.as_str(),
-            "1.0.10-b26123177" | "1.0.11" | "1.0.11-b26301409" | "1.0.12" | "1.0.12-b26489605"
+            "1.0.10-b26123177"
+                | "1.0.11"
+                | "1.0.11-b26301409"
+                | "1.0.12"
+                | "1.0.12-b26489605"
+                | "1.1.0"
         ) {
             expected_guards.insert("alicenation_Data/StreamingAssets/aa/settings.json");
         }

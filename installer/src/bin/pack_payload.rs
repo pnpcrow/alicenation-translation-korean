@@ -58,6 +58,7 @@ fn main() -> Result<()> {
         "1.0.10-b26075487" => 7438,
         "1.0.10-b26123177" => 7438,
         "1.0.11" | "1.0.11-b26301409" | "1.0.12" | "1.0.12-b26489605" => 7500,
+        "1.1.0" => 7501,
         _ => anyhow::bail!("unsupported game version"),
     };
     ensure!(
@@ -92,7 +93,12 @@ fn main() -> Result<()> {
     let mut guard_paths = vec!["alicenation.exe", "alicenation_Data/globalgamemanagers"];
     if matches!(
         manifest.game_version.as_str(),
-        "1.0.10-b26123177" | "1.0.11" | "1.0.11-b26301409" | "1.0.12" | "1.0.12-b26489605"
+        "1.0.10-b26123177"
+            | "1.0.11"
+            | "1.0.11-b26301409"
+            | "1.0.12"
+            | "1.0.12-b26489605"
+            | "1.1.0"
     ) {
         guard_paths.push("alicenation_Data/StreamingAssets/aa/settings.json");
     }
