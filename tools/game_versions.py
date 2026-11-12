@@ -6,9 +6,12 @@ import re
 import UnityPy
 
 ROOT = Path(__file__).resolve().parents[1]
-SUPPORTED = ("1.0.5", "1.0.6", "1.0.9", "1.0.10", "1.0.10-b26075487", "1.0.10-b26123177", "1.0.11", "1.0.11-b26301409", "1.0.12", "1.0.12-b26489605")
+SUPPORTED = ("1.0.5", "1.0.6", "1.0.9", "1.0.10", "1.0.10-b26075487", "1.0.10-b26123177", "1.0.11", "1.0.11-b26301409", "1.0.12", "1.0.12-b26489605", "1.1.0")
 # Steam can publish different content without changing bundleVersion.
 BUILD_IDENTITIES = {
+    "1.1.0": {
+        "8502addad4d325e19b1bfa521a47b8772766f74faece7a971497b523a520b122": "1.1.0",
+    },
     "1.0.12": {
         "e78613432bb284aac56b66ef0014846f1188924a1788cdf13f2ca335235c1b40": "1.0.12",
     },
@@ -22,6 +25,9 @@ BUILD_IDENTITIES = {
 }
 # Content-only updates can also retain the same globalgamemanagers file.
 CONTENT_BUILD_IDENTITIES = {
+    "1.1.0": {
+        "419c934fb56bd1815d8aa65b8825603d0f5c865aa3344402e13aadaee446d99a": "1.1.0",
+    },
     "1.0.12": {
         "419c934fb56bd1815d8aa65b8825603d0f5c865aa3344402e13aadaee446d99a": "1.0.12",
         "02a720f4e431be900805d95bc0b0ce7970f99f98be3a30b69e8b6bd296b97998": "1.0.12-b26489605",
@@ -36,6 +42,7 @@ CONTENT_BUILD_IDENTITIES = {
     }
 }
 FUNCTION_HASHES = {
+    "1.1.0": "2778d4f4ac8e045598ca3d12ca4ab11a6bdc4fef863009288d378176e6380b3c",
     "1.0.12-b26489605": "271d081e7ed71d2a1069889c33fc715c42efc1c911c2912fd71946e450fe44ad",
     "1.0.12": "271d081e7ed71d2a1069889c33fc715c42efc1c911c2912fd71946e450fe44ad",
     "1.0.5": "03c2448e9e4b1002cf2b1fd9874f0698c17236523ed274844e91b1e8bb7e2dd5",
@@ -54,6 +61,14 @@ FUNCTION_OFFSETS["1.0.11"] = 0x51CC50
 FUNCTION_OFFSETS["1.0.11-b26301409"] = 0x51CC50
 FUNCTION_OFFSETS["1.0.12"] = 0x51CC50
 FUNCTION_OFFSETS["1.0.12-b26489605"] = 0x51CC50
+FUNCTION_OFFSETS["1.1.0"] = 0x51D510
+
+
+def resource_object_id(version, old_id):
+    """1.1.0 inserted CardEyesConfig before resource object 1479."""
+    if version not in SUPPORTED:
+        raise ValueError(version)
+    return old_id + (1 if version == "1.1.0" and old_id >= 1479 else 0)
 
 
 def detect(game):

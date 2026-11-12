@@ -1,0 +1,12 @@
+{
+  "base_version": "1.0.12-b26489605",
+  "removed": [],
+  "added": {
+    "Label_Eyes": {
+      "ja": "ギョロ目",
+      "ko": "왕눈이 모드"
+    }
+  },
+  "changed": {},
+  "runtime_aliases": []
+}

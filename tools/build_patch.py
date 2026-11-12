@@ -97,8 +97,8 @@ def main():
     rel = "alicenation_Data/resources.assets"
     env = UnityPy.load(str(source(rel)))
     objects = {o.path_id: o for o in env.objects}
-    header, _ = parse_table(objects[1485].get_raw_data())
-    _, japanese = parse_table(objects[1488].get_raw_data())
+    header, _ = parse_table(objects[game_versions.resource_object_id(version, 1485)].get_raw_data())
+    _, japanese = parse_table(objects[game_versions.resource_object_id(version, 1488)].get_raw_data())
     problems = validate(dict(japanese), translated)
     if problems:
         raise ValueError("Invalid translations: " + "; ".join(problems))
@@ -115,9 +115,9 @@ def main():
     aliases = runtime_aliases.resolve(version, translated)
     runtime_aliases.verify_sources(objects, version)
     rows.extend(aliases.items())
-    objects[1485].set_raw_data(build_table(header, rows))
+    objects[game_versions.resource_object_id(version, 1485)].set_raw_data(build_table(header, rows))
     install_font(objects, template, [objects[1474], objects[1475]], 542)
-    enable_korean_word_wrapping(objects)
+    enable_korean_word_wrapping(objects, game_versions.resource_object_id(version, 1496))
     save(rel, env.file.save())
     print(f"Text: {len(translated)}/{len(japanese)}; runtime aliases: {len(aliases)}", flush=True)
 
@@ -130,7 +130,7 @@ def main():
     rel = "GameAssembly.dll"
     binary = game_versions.patch_localization_branch(source(rel).read_bytes(), version)
     save(rel, binary)
-    if version in ("1.0.11", "1.0.11-b26301409", "1.0.12", "1.0.12-b26489605"):
+    if version in ("1.0.11", "1.0.11-b26301409", "1.0.12", "1.0.12-b26489605", "1.1.0"):
         save(runtime_text.PATH, runtime_text.patch(source(runtime_text.PATH).read_bytes()))
 
     # Language buttons are serialized text rather than localization table values.

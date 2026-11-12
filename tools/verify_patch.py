@@ -86,13 +86,13 @@ def main():
         assert digest(args.game / row["path"]) == row["original_sha256"], row["path"]
     assert (args.patch / "GameAssembly.dll").read_bytes() == game_versions.patch_localization_branch(
         (args.game / "GameAssembly.dll").read_bytes(), version)
-    if version in ("1.0.11", "1.0.11-b26301409", "1.0.12", "1.0.12-b26489605"):
+    if version in ("1.0.11", "1.0.11-b26301409", "1.0.12", "1.0.12-b26489605", "1.1.0"):
         runtime_text.verify((args.game / runtime_text.PATH).read_bytes(),
                             (args.patch / runtime_text.PATH).read_bytes())
     env = UnityPy.load(str(args.patch / "alicenation_Data/resources.assets"))
     objects = {o.path_id: o for o in env.objects}
-    _, cn = parse_table(objects[1485].get_raw_data())
-    _, ja = parse_table(objects[1488].get_raw_data())
+    _, cn = parse_table(objects[game_versions.resource_object_id(version, 1485)].get_raw_data())
+    _, ja = parse_table(objects[game_versions.resource_object_id(version, 1488)].get_raw_data())
     translated = load_translations(version)
     aliases = runtime_aliases.resolve(version, translated)
     assert cn == [(key, translated.get(key, value)) for key, value in ja] + list(aliases.items())
@@ -103,12 +103,18 @@ def main():
     original_objects = {o.path_id: o for o in original_resources.objects}
     runtime_aliases.verify_sources(original_objects, version)
     runtime_aliases.verify_sources(objects, version)
-    # Preserve updated gameplay configuration, all scripts and comparison languages.
-    for oid in [1477, 1479, 1480, 1486, 1487, 1488, *range(1498, 1515)]:
+    # Preserve every unrelated object, including new eyes/gameplay configuration,
+    # all story scripts, comparison languages and their relocated references.
+    changed_resource_ids = {40, 542, 544, 1474, 1475,
+                            game_versions.resource_object_id(version, 1485),
+                            game_versions.resource_object_id(version, 1496)}
+    assert original_objects.keys() <= objects.keys()
+    for oid in original_objects.keys() - changed_resource_ids:
         assert original_objects[oid].get_raw_data() == objects[oid].get_raw_data(), oid
-    settings = next(o for o in original_resources.objects if o.path_id == 1496).get_raw_data()
+    settings_id = game_versions.resource_object_id(version, 1496)
+    settings = original_objects[settings_id].get_raw_data()
     assert len(settings) == 300 and settings[296:] == bytes(4)
-    assert objects[1496].get_raw_data() == settings[:296] + b"\x01\x00\x00\x00"
+    assert objects[settings_id].get_raw_data() == settings[:296] + b"\x01\x00\x00\x00"
     font_rel, = [r["path"] for r in manifest["files"] if "/fonts_assets_all_" in r["path"]]
     font_env = UnityPy.load(str(args.patch / font_rel))
     font_objects = {o.path_id: o for o in font_env.objects}
