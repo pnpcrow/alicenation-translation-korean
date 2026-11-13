@@ -1,6 +1,6 @@
 # Rust 인스톨러
 
-## 현재 배포: 게임 1.0.10 / v1 r2 로고 수정판 / 인스톨러 1.2.1
+## 이전 배포: 게임 1.0.10 / v1 r2 로고 수정판 / 인스톨러 1.2.1
 
 게임 안에서 로고를 잘라내던 Sprite 메시와 textureRect를 수정했다. 로고 이미지의
 픽셀, 사각 영역·피벗·배율, 다른 언어 로고는 유지한다. 인스톨러 엔진은 바꾸지 않았다.
@@ -308,4 +308,20 @@ installer/target/release/pack-payload.exe work/b26613101 work/p26613101 work/ali
 $env:ALICE_PAYLOAD = (Resolve-Path 'work/alicenation-1.1.0-v1.akp').Path
 cargo build --manifest-path installer/Cargo.toml --locked --release --bin alicenation-korean
 python -X utf8 tools/package_release.py --patch work/p26613101 --payload work/alicenation-1.1.0-v1.akp --readme docs/release-readme-1.1.0.txt --output dist/releases/Alicenation-1.1.0-Korean-v1
+```
+
+## 현재 배포: 1.1.2 Steam 빌드 26643402
+
+인스톨러 1.2.9는 게임 1.1.2의 버전·콘텐츠 설정·전체 패치 원본 해시를 검사한다.
+새 백업은 `backup/1.1.2/`에 보관한다. 25개 Rust 테스트에는 1.1.0에서의
+업데이트, 이전 기록·백업 보존, 원상 복구와 복수 패키지 선택 순서가 포함된다.
+7,501항목과 대사 키 연결 0개를 요구하며 패키징 거부 시험 17개를 통과했다.
+게임의 폰트 캐시·왕눈이 설정 보존과 코드 변경은 [분석 기록](update-26643402.md)에 있다.
+
+```powershell
+cargo build --manifest-path installer/Cargo.toml --locked --release --no-default-features --bin pack-payload
+installer/target/release/pack-payload.exe work/b26643402 work/p26643402 work/alicenation-1.1.2-v1.akp
+$env:ALICE_PAYLOAD = (Resolve-Path 'work/alicenation-1.1.2-v1.akp').Path
+cargo build --manifest-path installer/Cargo.toml --locked --release --bin alicenation-korean
+python -X utf8 tools/package_release.py --patch work/p26643402 --payload work/alicenation-1.1.2-v1.akp --readme docs/release-readme-1.1.2.txt --output dist/releases/Alicenation-1.1.2-Korean-v1
 ```
